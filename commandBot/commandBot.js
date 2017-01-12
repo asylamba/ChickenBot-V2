@@ -30,7 +30,7 @@ exports.bot = bot; // set by ref ?
  
 function success(token){
     
-    console.log("login sucesseful " +"\n exiting");
+    console.log("login sucesseful ");
     bot.user.setGame("en developpement"),
     bot.user.setPresence("dnd")
     
@@ -88,7 +88,7 @@ bot.on('message', function(message) { // quand le bot est pret
 // user and role test
 
 
-var isUserOfRole = function(userId,roleID,serverobj){
+var isUserOfRole = function(userID,roleID,serverObj){
     // this is kind of slow but i am not stick with the user list => may write function more rapid
     /**
      * fiunction given a user id and a roleid says if the user has the role on the server
@@ -96,13 +96,17 @@ var isUserOfRole = function(userId,roleID,serverobj){
      *
      */
     var userListFactionTemp = serverObj.members.array()
+    
     if (userListFactionTemp != undefined) {
 	for(var i in userListFactionTemp){
-	    if (userID ==userListFactionTemp[i].userID ) {
+	   
+	    if (userID ==userListFactionTemp[i].id ) {
 		var rolesOfUser = userListFactionTemp[i].roles.array();
 		
-		for (var i in rolesOfUser){
-		    if (rolesOfUser[i].id == roleID) {
+		for (var j in rolesOfUser){
+		    
+		    if (rolesOfUser[j].id == roleID) {
+			
 			return true;
 		    }
 		}
@@ -116,13 +120,14 @@ var isAdminFunc = function(userID){
     /**
      * return true if the user is an admin
      */
-    return isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+    
+    return isUserOfRole(userID,roleUtils.adminRoleId.id,asylambaServer);
 }
 var isModoFunc = function(userID){
     /**
      * return true if the user is an modo or above
      */
-     return isUserOfRole(userID,roleUtils.modoRoleId,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+     return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
 }
 
 var isBanFunc = function(userID){
@@ -179,10 +184,10 @@ var command = [
     new commandC(
 	function(message){
 		if(message.content=="!ping"){
-		    return true
+		    return true;
 		}
 		else{
-		    return false
+		    return false;
 		}
 	},
 	function(message){
@@ -202,10 +207,9 @@ var command = [
 	function(message){
 		var messageTemp = "";
 		for (var i in command){
+		    
 		    if (command[i].showHelp(message)) {
-			messageTemp += command[i].inputDescription + " : "+command[i].descr+"\n"
-			
-			
+			messageTemp +=  command[i].inputDescription + " : "+command[i].descr+"\n";
 		    }
 		}
 		botSendMessage(messageTemp,message.channel);
@@ -216,6 +220,23 @@ var command = [
 	    
 	},
 	"!help", "affiche la liste des commandes",truefunc
+    ),
+    new commandC(
+	function(message){
+	    if(message.content=="!exit" && isAdminFunc(message.author.id)){
+		return true
+	    }
+	    else{
+		return false
+	    }
+	},
+	function(message){
+	    
+	    botSendMessage("stopping",message.channel);
+	    setInterval(function(){allBotArrayModules[0].exit();},1000);
+	    
+	},
+	"!exit", "arrête le bot (admin)",function(message){return isAdminFunc(message.author.id);}
     ),
 ];
 

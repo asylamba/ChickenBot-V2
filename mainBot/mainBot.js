@@ -14,7 +14,7 @@ exports.bot = bot; // set by ref ?
 
 function success(token){
    
-    console.log("login sucesseful " +"\n exiting");
+    console.log("login sucesseful ");
     bot.user.setGame("en developpement"),
     bot.user.setPresence("dnd")
     
@@ -39,7 +39,7 @@ exports.init = function(token,allBotArrayPara){
 
 
 bot.on('ready', function() { // quand le bot est pret
-    setTimeout(function(){exports.exit()},100000);
+    //setTimeout(function(){exports.exit()},100000);
 });
 
 

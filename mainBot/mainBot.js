@@ -37,6 +37,19 @@ exports.init = function(token,allBotArrayPara){
 }
 
 
+var botSendMessage = function(message,channel,options){
+    //send message (you can use .then().catch() ..)
+    //options is optional
+    if (message!= undefined && message!= null) {
+	return channel.send(message,options);
+    }
+    else {
+	return channel.send(message);
+    }
+}
+
+exports.botSendMessage = botSendMessage;
+
 
 bot.on('ready', function() { // quand le bot est pret
     //setTimeout(function(){exports.exit()},100000);

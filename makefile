@@ -2,7 +2,7 @@ npm = npm
 npmInstallFlag= install 
 npmEndFlag = --save
 
-nodeJsLib = discord.js basic-auth uws erlpack discord.js-music 
+nodeJsLib = discord.js basic-auth uws erlpack
 
 #-----------------------
 
@@ -32,7 +32,7 @@ SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFo
 OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 
 .PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean
-
+#--------------------------
 
 
 #-----------------------------------------------------
@@ -40,25 +40,35 @@ OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 
 all: update
 
+
 updateLib:
 	$(npm) $(npmInstallFlag) $(nodeJsLib) $(npmEndFlag)
 	
-update: unzipArchive OBJ_FILES_CODE clean
+update: $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
+#temp solution
 
 $(nameOfSourceCodeArchive):
 	$(wget) $(linkToRepoArchive)
 
 #-----------------------------------------------------
 
+#setVar: override SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFolder)/*/*.js  $(nameOfArchiveSubFolder)/*/*/*.js)
+#setVar: override OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
+#setVar:
+#	$(eval override SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFolder)/*/*.js  $(nameOfArchiveSubFolder)/*/*/*.js))
+#	$(eval override OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE)))
+#	echo $(OBJ_FILES_CODE)
+#	echo $(SRC_FILES_CODE)
+#----------------------------------------------------
 	
 unzipArchive:
-	$(unzip) $(nameOfSourceCodeArchive)
+	$(unzip) $(nameOfSourceBranche)
 
 #-----------------------------------------------------
 
 	
 %.js: 
-	$(cp) $(nameOfArchiveSubFolder)/$< $<
+	$(cp) $(nameOfArchiveSubFolder)/$@ $@
 
 #-----------------------------------------------------
 

@@ -23,6 +23,8 @@ This file is part of Chicken Bot.
 
 var mainBot =  require('./mainBot/mainBot.js');
 var commandBot =  require('./commandBot/commandBot.js'); 
+var musicBot =  require('./musicBot/musicBot.js'); 
+
 
 var fs = require("fs"); // file système pour lire / écire dans des fichier
 
@@ -34,7 +36,7 @@ var loginServ; // [user,pass] for the server connection
 //var loginServ; //[user,pass] du bot
 
 
-var allBotArrayModules = [mainBot,commandBot] // all the bot
+var allBotArrayModules = [mainBot,commandBot,musicBot] // all the bot
 // pas de pointeurs ;(
 
 
@@ -55,6 +57,7 @@ fs.readFile('loginServeur.txt','ascii', function (err, data) { // lit les login 
 	
 	mainBot.init(token,allBotArrayModules); 
 	commandBot.init(token2,allBotArrayModules);
+	musicBot.init(token2,allBotArrayModules)
     });
     
 });

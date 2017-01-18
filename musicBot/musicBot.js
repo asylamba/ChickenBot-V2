@@ -4,6 +4,9 @@
 
 var path = require("path");
 
+const ytdl = require('ytdl-core');
+const streamOptions = { seek: 0, volume: 0.2 };
+
 
 var DiscordClient = require('discord.js'); // API discord
 var serverUtils =  require(path.join(__dirname, '/../','data/servers.js'));
@@ -16,8 +19,19 @@ exports.bot = bot; // set by ref ?
 var asylambaServer;
 
 
+//exports.voiceConnection = voiceConnection;
 //var email = ""; // email of bot 
 //var password = ""; // pass of the bot
+
+var play = function(url){
+    // TODO refaire proporement
+    console.log(url)
+    var voiceConnection = bot.voiceConnections.array()[0];
+    const stream = ytdl(url, {filter : 'audioonly'});
+    const dispatcher = voiceConnection.playStream(stream, streamOptions);
+}
+
+exports.play = play;
 
 
 function success(token){
@@ -63,9 +77,16 @@ bot.on('ready', function() { // quand le bot est pret
     
     var channelArray = asylambaServer.channels.array();
     for (var i in channelArray) {
-	if (channelArray[i] instanceof DiscordClient.VoiceChannel && channelArray[i].id =="133286854639222784") {
+	if (channelArray[i] instanceof DiscordClient.VoiceChannel && channelArray[i].id =="271333305469763584") {
 	    //bot.user.joinVoiceChannel(channelArray[i])
-	    channelArray[i].join()
+	    channelArray[i].join().then(connection => {
+	    //connection.playFile('./music/test.mp4');
+	    //const stream = ytdl('https://www.youtube.com/watch?v=zUrSQNSN6_c', {filter : 'audioonly'});
+	    //const dispatcher = connection.playStream(stream, streamOptions);
+	    
+	});
+	    
+	    //setTimeout(function(){},10000)
 	}
 	
     }
@@ -94,5 +115,6 @@ bot.on('ready', function() { // quand le bot est pret
     //setTimeout(function(){exports.exit()},100000);
 });
 
-
+bot.on("debug", (m) => console.log("[debug]", m));
+bot.on("warn", (m) => console.log("[warn]", m));
 

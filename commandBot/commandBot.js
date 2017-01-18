@@ -133,6 +133,12 @@ var isModoFunc = function(userID){
 var isBanFunc = function(userID){
     return isUserOfRole(userID,roleUtils.banRole.id,asylambaServer)
 }
+
+var notBotFunction = function(userID){
+    return !(bot.user.id == userID);
+    
+}
+
 /**********************************************************************************/
 // bot related function
 
@@ -195,8 +201,8 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
      * test si un message est de la forme "messageToTest @ChickenBot[ ]*" ou "messageToTest"
      * 
      */
-    
-    return message==messageToTest || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
+    //var regexpMessage = new RegExp(messageToTest)
+    return messageToTest == message || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
     
 }
@@ -302,7 +308,7 @@ var command = [
 	},
 	commandPrefix+"about", "A MORT HELIOR",truefunc
     ),
-     new commandC(
+    new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"command")){
 		return true
@@ -317,6 +323,46 @@ var command = [
 	    //TODO modifier
 	},
 	commandPrefix+"command", "",truefunc
+    ),
+    new commandC(
+	function(message){
+	    //var reg1 = new RegExp('!play '+" <@!"+bot.user.id+">"+"[ ]* *");
+	    var reg = new RegExp('!play *');
+	    console.log(message.content)
+	    console.log(reg.test(message.content))
+	    if(notBotFunction(message.author.id)&&reg.test(message.content)){
+		return true
+	    }
+	    else{
+		return false
+	    }
+	},
+	function(message){
+	    var temP = message.content.split(" ")
+	    var regBot = new RegExp("<@!"+bot.user.id+">");
+	    //var urlToPlay;
+	    
+	    //console.log(temP);
+	    //console.log(temP.length);
+	   
+	    allBotArrayModules[2].play(temP[1]);
+	    if ( temP.lenght > 2 /*&& regBot.test(temP[1])*/ ) {
+		//allBotArrayModules[2].play(temP[2]);
+	    }
+	    else if(temP.lenght >1) {
+		
+		//allBotArrayModules[2].play(temP[1]);
+		
+	    }
+	    
+	    message.delete(5000);
+	    //console.log(urlToPlay);
+	   
+	    
+	    //botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+	    //TODO modifier
+	},
+	commandPrefix+"play url", "play some music",truefunc
     ),
 ];
 

@@ -89,7 +89,7 @@ bot.on('message', function(message) { // quand le bot est pret
 
 
 var isUserOfRole = function(userID,roleID,serverObj){
-    // this is kind of slow but i am not stick with the user list => may write function more rapid
+    // this is  slow but i am not stick with the user list => may write function more rapid
     /**
      * fiunction given a user id and a roleid says if the user has the role on the server
      *
@@ -201,7 +201,7 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
      * test si un message est de la forme "messageToTest @ChickenBot[ ]*" ou "messageToTest"
      * 
      */
-    //var regexpMessage = new RegExp(messageToTest)
+    
     return messageToTest == message || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
     
@@ -229,31 +229,28 @@ var command = [
     ),
     new commandC(
 	function(message){
-		if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"help")){
-		    return true
-		}
-		else{
-		    return false
-		}
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"help")){
+		return true
+	    }
+	    else{
+		return false
+	    }
 	},
 	function(message){
-		var messageTemp = "";
-		for (var i in command){
-		    
-		    if (command[i].showHelp(message)) {
-			messageTemp +=  command[i].inputDescription + " : "+command[i].descr+"\n";
-		    }
+	    var messageTemp = "Liste des commandes\n`";
+	    for (var i in command){
+		
+		if (command[i].showHelp(message)) {
+		    messageTemp +=  "`"+command[i].inputDescription + "` : "+command[i].descr+"\n";
 		}
-		if (messageTemp != "") {
-		    botSendMessage(messageTemp,message.channel);
-		}
-		else{
-		    botSendMessage("no help to show",message.channel);
-		}
-		//bot.sendMessage({
-		//	to: channelID,
-		//	message: messageTemp
-		//});
+	    }
+	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki"
+	    if (messageTemp != "") {
+		botSendMessage(messageTemp+"`",message.channel);
+	    }
+	    else{
+		botSendMessage("no help to show",message.channel);
+	    }
 	    
 	},
 	commandPrefix+"help", "affiche la liste des commandes",truefunc
@@ -306,11 +303,11 @@ var command = [
 			   "Mon dépôt git se trouve sous TODO \n\n entrez \"!help\" pour voir la liste de mes commandes",message.channel);
 	    //TODO modifier
 	},
-	commandPrefix+"about", "A MORT HELIOR",truefunc
+	commandPrefix+"about", "a propos du bot",truefunc
     ),
     new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"command")){
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"commande")){
 		return true
 	    }
 	    else{
@@ -322,14 +319,12 @@ var command = [
 	    botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 	    //TODO modifier
 	},
-	commandPrefix+"command", "",truefunc
+	commandPrefix+"commande", "",truefunc
     ),
     new commandC(
 	function(message){
-	    //var reg1 = new RegExp('!play '+" <@!"+bot.user.id+">"+"[ ]* *");
-	    var reg = new RegExp('!play *');
-	    console.log(message.content)
-	    console.log(reg.test(message.content))
+	    
+	    var reg = new RegExp('^!play *');
 	    if(notBotFunction(message.author.id)&&reg.test(message.content)){
 		return true
 	    }
@@ -356,9 +351,7 @@ var command = [
 	    }
 	    
 	    message.delete(5000);
-	    //console.log(urlToPlay);
 	   
-	    
 	    //botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 	    //TODO modifier
 	},

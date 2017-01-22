@@ -1,3 +1,23 @@
+/*
+Copyright 2017 ChickenStorm
+
+
+This file is part of Chicken Bot.
+
+    Foobar is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Chicken Bot is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Chicken Bot.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
 
 
 "use strict";
@@ -19,16 +39,26 @@ exports.bot = bot; // set by ref ?
 var asylambaServer;
 
 
-//exports.voiceConnection = voiceConnection;
-//var email = ""; // email of bot 
-//var password = ""; // pass of the bot
 
 var play = function(url){
     // TODO refaire proporement
     console.log(url)
     var voiceConnection = bot.voiceConnections.array()[0];
-    const stream = ytdl(url, {filter : 'audioonly'});
+    voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
+    voiceConnection.on("warn", (m) => console.log("[voiceConnection : warn]", m));
+    
+    const stream = ytdl(url, {filter : 'audioonly',quality:'lowest'});
     const dispatcher = voiceConnection.playStream(stream, streamOptions);
+    
+    dispatcher.on("debug", (m) => console.log("[dispatcher debug]", m));
+    dispatcher.on("warn", (m) => console.log("[dispatcher warn]", m));
+    dispatcher.on("error", (m) => console.log("[dispatcher error]", m));
+    dispatcher.on("end", (m) => console.log("[dispatcher end]", m));
+    stream.on("debug", (m) => console.log("[stream debug]", m));
+    stream.on("warn", (m) => console.log("[stream warn]", m));
+    stream.on("error", (m) => console.log("[stream error]", m));
+    stream.on("end", (m) => console.log("[stream end]", m));
+    
 }
 
 exports.play = play;
@@ -56,11 +86,6 @@ function err(error){
 exports.init = function(token,allBotArrayPara){
     allBotArrayModules = allBotArrayPara;
     bot.login(token).then(success).catch(err);
-    //console.log(exports.exit)
-    
-    
-    
-    
     
 }
 
@@ -86,7 +111,7 @@ bot.on('ready', function() { // quand le bot est pret
 	    
 	});
 	    
-	    //setTimeout(function(){},10000)
+	    
 	}
 	
     }
@@ -112,9 +137,9 @@ exports.botSendMessage = botSendMessage;
 
 
 bot.on('ready', function() { // quand le bot est pret
-    //setTimeout(function(){exports.exit()},100000);
+    
 });
 
-bot.on("debug", (m) => console.log("[debug]", m));
-bot.on("warn", (m) => console.log("[warn]", m));
+//bot.on("debug", (m) => console.log("[debug]", m));
+//bot.on("warn", (m) => console.log("[warn]", m));
 

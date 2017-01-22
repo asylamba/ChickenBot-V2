@@ -36,28 +36,29 @@ var loginServ; // [user,pass] for the server connection
 //var loginServ; //[user,pass] du bot
 
 
-var allBotArrayModules = [mainBot,commandBot,musicBot] // all the bot
+var allBotArrayModules = [mainBot,commandBot,musicBot] // all the bots
 // pas de pointeurs ;(
 
 
 
 fs.readFile('loginServeur.txt','ascii', function (err, data) { // lit les login pour le serveur
     
-    var dataTemp2= data.split(";");
-    loginServ = dataTemp2;
-    dataTemp2 = "";
+    var dataTemp2= data.split(";"); // le format des login est user;pass
+    loginServ = dataTemp2; 
+    dataTemp2 = ""; 
     
     fs.readFile('token.txt','ascii', function (err, data) { // lit les login du bot
-	var dataTemp= data.split(";");
-	var token = dataTemp[0];
-	var token2 = dataTemp[1];
-	//passwordBot = dataTemp[1];
+	var dataTemp= data.split(";"); // format des token : tokenMainBot;tokenCommandBot;tokenMusicBot
+	var tokenMainBot = dataTemp[0];
+	var tokenCommandBot = dataTemp[1];
+	var tokenMusicBot = dataTemp[2];
+	
 	data = "";
 	dataTemp = [];
 	
-	mainBot.init(token,allBotArrayModules); 
-	commandBot.init(token2,allBotArrayModules);
-	musicBot.init(token2,allBotArrayModules)
+	mainBot.init(tokenMainBot,allBotArrayModules);  
+	commandBot.init(tokenCommandBot,allBotArrayModules);
+	musicBot.init(tokenMusicBot,allBotArrayModules)
     });
     
 });

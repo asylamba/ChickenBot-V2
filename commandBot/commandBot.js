@@ -13,12 +13,16 @@ var roleUtils =  require(path.join(__dirname, '/../','data/role.js'));
 
 var allBotArrayModules;
 
+var musicBot;
+
 var bot = new DiscordClient.Client();
 
 var userListFaction = []; // lioste des utilisateurs
 
 
 var asylambaServer;
+
+
 
 exports.bot = bot; // set by ref ? 
 
@@ -49,6 +53,7 @@ exports.init = function(token,allBotArrayPara){
     allBotArrayModules = allBotArrayPara;
     bot.login(token).then(success).catch(err);
     
+    musicBot = allBotArrayModules[2];
     
 }
 
@@ -77,6 +82,10 @@ bot.on('message', function(message) { // quand le bot est pret
     
     for(var i in command){
 	if (command[i].testInput(message)) {
+	    
+	    var promise = message.react("👌🏽");
+	    promise.then(function(){}).catch((m) => {console.log(m);});
+	    
 	    command[i].func(message); // exécute la commande si la condition correcte est verifiée
 	    //logDebug("message","command " + message);
 	}
@@ -244,13 +253,22 @@ var command = [
 		    messageTemp +=  "`"+command[i].inputDescription + "` : "+command[i].descr+"\n";
 		}
 	    }
+	    
+	    for (var i in musicBot.commandMusic){
+		
+		if (musicBot.commandMusic[i].showHelp(message)) {
+		    messageTemp +=  "`"+musicBot.commandMusic[i].inputDescription + "` : "+musicBot.commandMusic[i].descr+"\n";
+		}
+	    }
 	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki"
+	    
 	    if (messageTemp != "") {
-		botSendMessage(messageTemp+"`",message.channel);
+		botSendMessage(messageTemp+"",message.channel);
 	    }
 	    else{
 		botSendMessage("no help to show",message.channel);
 	    }
+	    
 	    
 	},
 	commandPrefix+"help", "affiche la liste des commandes",truefunc
@@ -317,45 +335,22 @@ var command = [
 	function(message){
 		
 	    botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+	    
+	    
+	    /*var calback = function(message){
+		var reaction = message.reactions.array()[0].emoji;
+		
+		console.log(reaction);
+		
+		//botSendMessage(reaction.name+"  :  "+reaction.id +"  :  "+reaction.identifier+"",message.channel)
+		message.react(reaction);
+	    }
+	    
+	    setTimeout(function(){calback(message)},10000,message)
+	    */
 	    //TODO modifier
 	},
 	commandPrefix+"commande", "",truefunc
-    ),
-    new commandC(
-	function(message){
-	    
-	    var reg = new RegExp('^!play *');
-	    if(notBotFunction(message.author.id)&&reg.test(message.content)){
-		return true
-	    }
-	    else{
-		return false
-	    }
-	},
-	function(message){
-	    var temP = message.content.split(" ")
-	    var regBot = new RegExp("<@!"+bot.user.id+">");
-	    //var urlToPlay;
-	    
-	    //console.log(temP);
-	    //console.log(temP.length);
-	   
-	    allBotArrayModules[2].play(temP[1]);
-	    if ( temP.lenght > 2 /*&& regBot.test(temP[1])*/ ) {
-		//allBotArrayModules[2].play(temP[2]);
-	    }
-	    else if(temP.lenght >1) {
-		
-		//allBotArrayModules[2].play(temP[1]);
-		
-	    }
-	    
-	    message.delete(5000);
-	   
-	    //botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
-	    //TODO modifier
-	},
-	commandPrefix+"play url", "play some music",truefunc
     ),
 ];
 

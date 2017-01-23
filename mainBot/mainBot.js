@@ -34,7 +34,7 @@ function success(token){
      * function used by bot.login on success
      */
    
-    console.log("login sucesseful ");
+    console.log("login sucessful ");
     bot.user.setGame("en developpement"),
     bot.user.setPresence("dnd")
     

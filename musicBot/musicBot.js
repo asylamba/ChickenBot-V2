@@ -66,7 +66,7 @@ exports.play = play;
 
 function success(token){
    
-    console.log("login sucesseful ");
+    console.log("login sucessful ");
     bot.user.setGame("en developpement"),
     bot.user.setPresence("dnd")
     

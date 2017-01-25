@@ -64,9 +64,9 @@ bot.on('ready', function() { // quand le bot est pret
     var serverList = bot.guilds.array();//
     
     for (var i in serverList){
-	if (serverList[i].id ==serverUtils.rootServerId ) {
-	    asylambaServer = serverList[i];
-	}
+		if (serverList[i].id ==serverUtils.rootServerId ) {
+			asylambaServer = serverList[i];
+		}
     }
     
     
@@ -81,14 +81,14 @@ bot.on('message', function(message) { // quand le bot est pret
     //todo les disable enable ect
     
     for(var i in command){
-	if (command[i].testInput(message)) {
-	    
-	    var promise = message.react("👌🏽");
-	    promise.then(function(){}).catch((m) => {console.log(m);});
-	    
-	    command[i].func(message); // exécute la commande si la condition correcte est verifiée
-	    //logDebug("message","command " + message);
-	}
+		if (command[i].testInput(message)) {
+			
+			var promise = message.react("👌🏽");
+			promise.then(function(){}).catch((m) => {console.log(m);});
+			
+			command[i].func(message); // exécute la commande si la condition correcte est verifiée
+			//logDebug("message","command " + message);
+		}
     }
     
     
@@ -107,20 +107,19 @@ var isUserOfRole = function(userID,roleID,serverObj){
     var userListFactionTemp = serverObj.members.array()
     
     if (userListFactionTemp != undefined) {
-	for(var i in userListFactionTemp){
-	   
-	    if (userID ==userListFactionTemp[i].id ) {
-		var rolesOfUser = userListFactionTemp[i].roles.array();
-		
-		for (var j in rolesOfUser){
-		    
-		    if (rolesOfUser[j].id == roleID) {
-			
-			return true;
-		    }
+		for(var i in userListFactionTemp){
+		   
+			if (userID ==userListFactionTemp[i].id ) {
+				var rolesOfUser = userListFactionTemp[i].roles.array();
+				
+				for (var j in rolesOfUser){
+					
+					if (rolesOfUser[j].id == roleID) {
+						return true;
+					}
+				}
+			}
 		}
-	    }
-	}
     }
     return false;
 }
@@ -136,7 +135,8 @@ var isModoFunc = function(userID){
     /**
      * return true if the user is an modo or above
      */
-     return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+	
+	return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
 }
 
 var isBanFunc = function(userID){
@@ -155,10 +155,10 @@ var botSendMessage = function(message,channel,options){
     //send message (you can use .then().catch() ..)
     //options is optional
     if (message!= undefined && message!= null) {
-	return channel.send(message,options);
+		return channel.send(message,options);
     }
     else {
-	return channel.send(message);
+		return channel.send(message);
     }
 }
 
@@ -193,10 +193,10 @@ var testMessageIfFollowedByMentionToBot = function(message,messageToTest){
     
     var regexpMessage = new RegExp(messageToTest+" <@!"+bot.user.id+">"+"[ ]*");
     if (regexpMessage.test(message) ) {
-	return true
+		return true
     }
     else{
-	return false
+		return false
     }
     
     
@@ -239,34 +239,33 @@ var command = [
     new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"help")){
-		return true
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
 	    var messageTemp = "Liste des commandes\n`";
 	    for (var i in command){
-		
-		if (command[i].showHelp(message)) {
-		    messageTemp +=  "`"+command[i].inputDescription + "` : "+command[i].descr+"\n";
-		}
+			
+			if (command[i].showHelp(message)) {
+				messageTemp +=  "`"+command[i].inputDescription + "` : "+command[i].descr+"\n";
+			}
 	    }
 	    
 	    for (var i in musicBot.commandMusic){
-		
-		if (musicBot.commandMusic[i].showHelp(message)) {
-		    messageTemp +=  "`"+musicBot.commandMusic[i].inputDescription + "` : "+musicBot.commandMusic[i].descr+"\n";
-		}
+			if (musicBot.commandMusic[i].showHelp(message)) {
+				messageTemp +=  "`"+musicBot.commandMusic[i].inputDescription + "` : "+musicBot.commandMusic[i].descr+"\n";
+			}
 	    }
 	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki"
 	    
 	    if (messageTemp != "") {
-		botSendMessage(messageTemp+"",message.channel);
+			botSendMessage(messageTemp+"",message.channel);
 	    }
 	    else{
-		botSendMessage("no help to show",message.channel);
+			botSendMessage("no help to show",message.channel);
 	    }
 	    
 	    
@@ -276,10 +275,10 @@ var command = [
     new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && isAdminFunc(message.author.id)){
-		return true
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
@@ -309,10 +308,10 @@ var command = [
     new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"about")){
-		return true
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
@@ -326,10 +325,10 @@ var command = [
     new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"commande")){
-		return true
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){

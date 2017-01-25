@@ -30,14 +30,14 @@ exports.bot = bot; // set by ref
 
 
 function success(token){
-    /*
-     * function used by bot.login on success
-     */
-   
-    console.log("login sucessful ");
-    bot.user.setGame("en developpement"),
-    bot.user.setPresence("dnd")
-    
+	/*
+	 * function used by bot.login on success
+	 */
+	
+	console.log("login sucessful ");
+	bot.user.setGame("en developpement"),
+	bot.user.setPresence("dnd")
+	
     
 }
 
@@ -70,20 +70,20 @@ exports.init = function(token,allBotArrayPara){
 
 
 var botSendMessage = function(message,channel,options){
-    /*
-     * send message (you can use .then().catch() )
-     * input :
-     *   - mesage : mesage to send
-     *   - channel : where to send the message
-     *   - options : channel.send the option used by (it is optional)
-     *   
-     */
-    if (message!= undefined && message!= null) {
-	return channel.send(message,options);
-    }
-    else {
-	return channel.send(message);
-    }
+	/*
+	 * send message (you can use .then().catch() )
+	 * input :
+	 *   - mesage : mesage to send
+	 *   - channel : where to send the message
+	 *   - options : channel.send the option used by (it is optional)
+	 *   
+	 */
+	if (message!= undefined && message!= null) {
+		return channel.send(message,options);
+	}
+	else {
+		return channel.send(message);
+	}
 }
 
 exports.botSendMessage = botSendMessage;
@@ -100,7 +100,7 @@ exports.exit = function(){
      */
     
     for (var i in allBotArrayModules) {
-	allBotArrayModules[i].bot.destroy();
+		allBotArrayModules[i].bot.destroy();
     }
     setTimeout(function(){process.exit(0)},2000);
 }

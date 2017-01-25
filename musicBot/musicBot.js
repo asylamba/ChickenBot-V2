@@ -25,7 +25,7 @@ This file is part of Chicken Bot.
 var path = require("path");
 
 const ytdl = require('ytdl-core');
-const streamOptions = { seek: 0, volume: 0.2 };
+const streamOptions = { seek: 0, volume: 0.25 };
 
 
 var DiscordClient = require('discord.js'); // API discord
@@ -46,18 +46,18 @@ function playMusicObect(startP,inputTextP,infoP,messageDataP){
      * Object for storing data about a video / music that teh bot will play
      *
      */
-    this.startStreaming = startP;
-    this.inputText = inputTextP;
+	this.startStreaming = startP;
+	this.inputText = inputTextP;
     
-    this.message =messageDataP;
-   
-    this.info = infoP | null;
+	this.message =messageDataP;
+	
+	this.info = infoP ;
     
     
     
 }
 
-var play = function(url,message){
+var play = function(url,message,rangeP){
     // TODO refaire proporement
     try{
 	console.log(url)
@@ -65,23 +65,81 @@ var play = function(url,message){
 	var posOfVoiceConnection = 0;
 	
 	var voiceConnection = bot.voiceConnections.array()[posOfVoiceConnection];
-	CurrentlyPlaying[posOfVoiceConnection] = new playMusicObect(Date.now,url,null,message);
+	CurrentlyPlaying[posOfVoiceConnection] = new playMusicObect(Date.now(),url,null,message);
 	
-	
+	//TODO revoir un peu
 	ytdl.getInfo(url,function(err,info){
 	    CurrentlyPlaying[posOfVoiceConnection].info = info;
-	    botSendMessage("Now playing : `" + CurrentlyPlaying[posOfVoiceConnection].info.title+"`" ,message.channel)
+		if (info != undefined && info.title != undefined ) {
+			botSendMessage("Now playing : `" + CurrentlyPlaying[posOfVoiceConnection].info.title+"`" ,message.channel);
+			console.log(info.length_seconds);
+			console.log(info.timestamp)
+	    }
+	    else{
+			console.log(err);
+	    }
+	    
+	    
 	});
 	
 	
 	voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
-	voiceConnection.on("warn", (m) => {
+	/*voiceConnection.on("warn", (m) => {
 	    console.log("[voiceConnection : warn]", m);
 	    botSendMessage("The music stop playing ... I will try to restart it for you :thumbup::skin-tone-3:",message.channel)
+	});*/
+	var stream;
+	if (rangeP == undefined || rangeP==null || rangeP=="") {
+	    
+	    stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});//,range:'1000-1100000'}); //
+	    
+	}
+	else{
+	    console.log(rangeP)
+	    stream= ytdl(url, {filter : 'audioonly',quality:'lowest',range:rangeP});
+	}
+	
+	stream.on("error", (m) => {
+	    var errStreamStopRegExp = new RegExp("Error: read ECONNRESET");
+	    
+	    if (errStreamStopRegExp.test(m)) {
+			var timeOfStop = Date.now();
+			console.log("[stream : error] ", m);
+			botSendMessage("The music stop playing... ",message.channel);
+			// I will try to restart it for you :thumbup::skin-tone-3:
+			
+			
+			//console.log(timeOfStop);
+			//console.log(CurrentlyPlaying[posOfVoiceConnection].info);
+			if (CurrentlyPlaying[posOfVoiceConnection].info !=null && CurrentlyPlaying[posOfVoiceConnection].info !=undefined){
+				var lengthSecond = CurrentlyPlaying[posOfVoiceConnection].info.length_seconds;
+				var timestamp = CurrentlyPlaying[posOfVoiceConnection].timestamp;
+				if (lengthSecond != undefined && timestamp!= undefined ) {
+				//console.log(timeOfStop);
+				
+				var timeOfPlay = (timeOfStop-CurrentlyPlaying[posOfVoiceConnection].startStreaming)/1000; // in sec
+				
+				var rangeP2 = parseInt((timeOfPlay/lengthSecond)*timestamp)+"-"+timestamp;
+				
+				//play(CurrentlyPlaying[posOfVoiceConnection],message,rangep2)
+				
+				}
+			}
+			
+	    }
+	    else{
+			console.log("[stream : error] ", m);
+			botSendMessage("The music stop playing... Unknown error",message.channel)
+	    }
 	});
-    
-	const stream = ytdl(url, {filter : 'audioonly',quality:'lowest'});
+	
 	const dispatcher = voiceConnection.playStream(stream, streamOptions);
+	
+	dispatcher.on("end",function(m){
+		// next in the PlayLits
+		
+	});
+	
     }
     catch(e){
 	botSendMessage("I couldn't play "+url+"\n"+e,message.channel)
@@ -96,7 +154,7 @@ var play = function(url,message){
     dispatcher.on("end", (m) => console.log("[dispatcher end]", m));
     stream.on("debug", (m) => console.log("[stream debug]", m));
     stream.on("warn", (m) => console.log("[stream warn]", m));
-    stream.on("error", (m) => console.log("[stream error]", m));
+    
     stream.on("end", (m) => console.log("[stream end]", m));*/
     
 }
@@ -233,20 +291,20 @@ var isUserOfRole = function(userID,roleID,serverObj){
     var userListFactionTemp = serverObj.members.array()
     
     if (userListFactionTemp != undefined) {
-	for(var i in userListFactionTemp){
-	   
-	    if (userID ==userListFactionTemp[i].id ) {
-		var rolesOfUser = userListFactionTemp[i].roles.array();
-		
-		for (var j in rolesOfUser){
-		    
-		    if (rolesOfUser[j].id == roleID) {
-			
-			return true;
-		    }
+		for(var i in userListFactionTemp){
+		   
+			if (userID ==userListFactionTemp[i].id ) {
+				var rolesOfUser = userListFactionTemp[i].roles.array();
+				
+				for (var j in rolesOfUser){
+					
+					if (rolesOfUser[j].id == roleID) {
+					
+					return true;
+					}
+				}
+			}
 		}
-	    }
-	}
     }
     return false;
 }

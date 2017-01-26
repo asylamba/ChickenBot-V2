@@ -31,6 +31,10 @@ const streamOptions = { seek: 0, volume: 0.25 };
 var DiscordClient = require('discord.js'); // API discord
 var serverUtils =  require(path.join(__dirname, '/../','data/servers.js'));
 
+var path = require("path");
+var userList =  require(path.join(__dirname, '/../','data/user.js'));
+var serverUtils =  require(path.join(__dirname, '/../','data/servers.js'));
+var roleUtils =  require(path.join(__dirname, '/../','data/role.js'));
 
 var bot = new DiscordClient.Client();
 var allBotArrayModules;
@@ -41,7 +45,7 @@ var asylambaServer;
 var CurrentlyPlaying =[];
 
 
-function playMusicObect(startP,inputTextP,infoP,messageDataP){
+function playMusicObect(startP,inputTextP,channelArrayToMessageP,infoP){
     /*
      * Object for storing data about a video / music that teh bot will play
      *
@@ -49,7 +53,7 @@ function playMusicObect(startP,inputTextP,infoP,messageDataP){
 	this.startStreaming = startP;
 	this.inputText = inputTextP;
     
-	this.message =messageDataP;
+	this.channelArrayToMessage =channelArrayToMessageP;
 	
 	this.info = infoP ;
     
@@ -57,97 +61,141 @@ function playMusicObect(startP,inputTextP,infoP,messageDataP){
     
 }
 
-var play = function(url,message,rangeP){
+var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
+	/*
+	 * Play a music and send message by the bot to say wich music is played
+	 *
+	 * input:
+	 * 		- url : the url of the video (it could also be the indentifer of the vieo like rWrjwUm3Oi4)
+	 * 		- channelArrayToMessage : an array of channel where the bot will send message
+	 * 		- rangeP [optional] : the range of the video () in the INT-INT format [NOT WORKING] due to a issie with  ytdl-core
+	 * outupt :
+	 *      - true : the music has been succesfully start playing
+	 *      - false : the music cannot be played
+	 */
+	
     // TODO refaire proporement
-    try{
+   
 	console.log(url)
 	
 	var posOfVoiceConnection = 0;
+	var voiceConnectionsArray =bot.voiceConnections.array();
+	var hasVoiceInThisServer = false;
 	
-	var voiceConnection = bot.voiceConnections.array()[posOfVoiceConnection];
-	CurrentlyPlaying[posOfVoiceConnection] = new playMusicObect(Date.now(),url,null,message);
-	
-	//TODO revoir un peu
-	ytdl.getInfo(url,function(err,info){
-	    CurrentlyPlaying[posOfVoiceConnection].info = info;
-		if (info != undefined && info.title != undefined ) {
-			botSendMessage("Now playing : `" + CurrentlyPlaying[posOfVoiceConnection].info.title+"`" ,message.channel);
-			console.log(info.length_seconds);
-			console.log(info.timestamp)
-	    }
-	    else{
-			console.log(err);
-	    }
-	    
-	    
-	});
-	
-	
-	voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
-	/*voiceConnection.on("warn", (m) => {
-	    console.log("[voiceConnection : warn]", m);
-	    botSendMessage("The music stop playing ... I will try to restart it for you :thumbup::skin-tone-3:",message.channel)
-	});*/
-	var stream;
-	if (rangeP == undefined || rangeP==null || rangeP=="") {
-	    
-	    stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});//,range:'1000-1100000'}); //
-	    
-	}
-	else{
-	    console.log(rangeP)
-	    stream= ytdl(url, {filter : 'audioonly',quality:'lowest',range:rangeP});
+	for (var i in voiceConnectionsArray){
+		if (voiceConnectionsArray[i].channel.guild.id ==guild.id ) {
+			hasVoiceInThisServer = true;
+			posOfVoiceConnection = i;
+		}
 	}
 	
-	stream.on("error", (m) => {
-	    var errStreamStopRegExp = new RegExp("Error: read ECONNRESET");
-	    
-	    if (errStreamStopRegExp.test(m)) {
-			var timeOfStop = Date.now();
-			console.log("[stream : error] ", m);
-			botSendMessage("The music stop playing... ",message.channel);
-			// I will try to restart it for you :thumbup::skin-tone-3:
+	if ( hasVoiceInThisServer ) {
+		try{
+			var voiceConnection = voiceConnectionsArray[posOfVoiceConnection];
 			
 			
-			//console.log(timeOfStop);
-			//console.log(CurrentlyPlaying[posOfVoiceConnection].info);
-			if (CurrentlyPlaying[posOfVoiceConnection].info !=null && CurrentlyPlaying[posOfVoiceConnection].info !=undefined){
-				var lengthSecond = CurrentlyPlaying[posOfVoiceConnection].info.length_seconds;
-				var timestamp = CurrentlyPlaying[posOfVoiceConnection].timestamp;
-				if (lengthSecond != undefined && timestamp!= undefined ) {
-				//console.log(timeOfStop);
-				
-				var timeOfPlay = (timeOfStop-CurrentlyPlaying[posOfVoiceConnection].startStreaming)/1000; // in sec
-				
-				var rangeP2 = parseInt((timeOfPlay/lengthSecond)*timestamp)+"-"+timestamp;
-				
-				//play(CurrentlyPlaying[posOfVoiceConnection],message,rangep2)
-				
+			
+			CurrentlyPlaying[posOfVoiceConnection] = new playMusicObect(Date.now(),url,channelArrayToMessage,null);
+			
+			//TODO revoir un peu
+			ytdl.getInfo(url,function(err,info){
+				CurrentlyPlaying[posOfVoiceConnection].info = info;
+				if (info != undefined && info.title != undefined ) {
+					for (var i in channelArrayToMessage){
+						botSendMessage("Now playing : `" + CurrentlyPlaying[posOfVoiceConnection].info.title+"`" ,channelArrayToMessage[i]);
+					}
+					//console.log(info.length_seconds);
+					//console.log(info.timestamp)
 				}
+				else{
+					console.log(err);
+				}
+				
+				
+			});
+			
+			
+			voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
+			/*voiceConnection.on("warn", (m) => {
+				console.log("[voiceConnection : warn]", m);
+				botSendMessage("The music stop playing ... I will try to restart it for you :thumbup::skin-tone-3:",message.channel)
+			});*/
+			var stream;
+			if (rangeP == undefined || rangeP==null || rangeP=="") {
+				
+				stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});//,range:'1000-1100000'}); //
+				
+			}
+			else{
+				console.log(rangeP)
+				//stream= ytdl(url, {filter : 'audioonly',quality:'lowest',range:rangeP}); // DO NOT WORK ! API bug
+				stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});
 			}
 			
-	    }
-	    else{
-			console.log("[stream : error] ", m);
-			botSendMessage("The music stop playing... Unknown error",message.channel)
-	    }
-	});
-	
-	const dispatcher = voiceConnection.playStream(stream, streamOptions);
-	
-	dispatcher.on("end",function(m){
-		// next in the PlayLits
+			stream.on("error", (m) => {
+				var errStreamStopRegExp = new RegExp("Error: read ECONNRESET");
+				
+				if (errStreamStopRegExp.test(m)) {
+					var timeOfStop = Date.now();
+					console.log("[stream : error] ", m);
+					for (var i in channelArrayToMessage){
+						botSendMessage("The music stop playing... (Common error) ",channelArrayToMessage[i]);
+					}
+					// I will try to restart it for you :thumbup::skin-tone-3:
+					
+					/* Not used
+					//console.log(timeOfStop);
+					//console.log(CurrentlyPlaying[posOfVoiceConnection].info);
+					if (CurrentlyPlaying[posOfVoiceConnection].info !=null && CurrentlyPlaying[posOfVoiceConnection].info !=undefined){
+						var lengthSecond = CurrentlyPlaying[posOfVoiceConnection].info.length_seconds;
+						var timestamp = CurrentlyPlaying[posOfVoiceConnection].timestamp;
+						if (lengthSecond != undefined && timestamp!= undefined ) {
+						//console.log(timeOfStop);
+						
+						var timeOfPlay = (timeOfStop-CurrentlyPlaying[posOfVoiceConnection].startStreaming)/1000; // in sec
+						
+						var rangeP2 = parseInt((timeOfPlay/lengthSecond)*timestamp)+"-"+timestamp;
+						
+						//play(CurrentlyPlaying[posOfVoiceConnection],message,rangep2)
+						
+						}
+					}
+					*/
+				}
+				else{
+					console.log("[stream : error] ", m);
+					for (var i in channelArrayToMessage){
+						botSendMessage("The music stop playing... Unknown error",channelArrayToMessage[i]);
+					}
+				}
+			});
+			
+			const dispatcher = voiceConnection.playStream(stream, streamOptions);
+			
+			dispatcher.on("end",function(m){
+				// next in the PlayLits
+				
+			});
+			
+			return true;
+		}
+		catch(e){
+			for (var i in channelArrayToMessage){
+				botSendMessage("I couldn't play "+url+"\n"+e,channelArrayToMessage[i]);
+			}
+			return false;
+		}
+		finally{
+			
+		}
+	} // then channel does not exist
+	else{
+		for (var i in channelArrayToMessage){
+			botSendMessage("I am not in any voice channel",channelArrayToMessage[i]);
+		}
 		
-	});
-	
-    }
-    catch(e){
-	botSendMessage("I couldn't play "+url+"\n"+e,message.channel)
-    }
-    finally{
-	
-    }
-    
+		return false;
+	}
     /*dispatcher.on("debug", (m) => console.log("[dispatcher debug]", m));
     dispatcher.on("warn", (m) => console.log("[dispatcher warn]", m));
     dispatcher.on("error", (m) => console.log("[dispatcher error]", m));
@@ -159,7 +207,7 @@ var play = function(url,message,rangeP){
     
 }
 
-exports.play = play;
+//exports.play = play;
 
 
 function success(token){
@@ -193,25 +241,25 @@ bot.on('ready', function() { // quand le bot est pret
     var serverList = bot.guilds.array();//
     
     for (var i in serverList){
-	if (serverList[i].id ==serverUtils.rootServerId ) {
-	    asylambaServer = serverList[i];
-	}
+		if (serverList[i].id ==serverUtils.rootServerId ) {
+			asylambaServer = serverList[i];
+		}
     }
     
     var channelArray = asylambaServer.channels.array();
     for (var i in channelArray) {
-	if (channelArray[i] instanceof DiscordClient.VoiceChannel && channelArray[i].id =="271333305469763584") {
-	    
-	    channelArray[i].join().then(connection => {
-		//connection.playFile('./music/test.mp4');
-		//const stream = ytdl('https://www.youtube.com/watch?v=zUrSQNSN6_c', {filter : 'audioonly'});
-		//const dispatcher = connection.playStream(stream, streamOptions);
-	    
-	    });
-	    
-	    
-	}
-	
+		if (channelArray[i] instanceof DiscordClient.VoiceChannel && channelArray[i].id =="271333305469763584") {
+			
+			//channelArray[i].join().then(connection => {
+				
+				//connection.playFile('./music/test.mp4');
+				//const stream = ytdl('https://www.youtube.com/watch?v=zUrSQNSN6_c', {filter : 'audioonly'});
+				//const dispatcher = connection.playStream(stream, streamOptions);
+				
+			//});
+			
+			
+		}
     }
     
     var connection = bot.voiceConnection;
@@ -226,14 +274,14 @@ bot.on('message', function(message) { // quand le bot est pret
     //todo les disable enable ect
     
     for(var i in commandMusic){
-	if (commandMusic[i].testInput(message)) {
-	    var promise = message.react("👌🏽");
-	    promise.then(function(){}).catch((m) => {console.log(m);});
-	    
-	    commandMusic[i].func(message); // exécute la commande si la condition correcte est verifiée
-	    
-	    //logDebug("message","command " + message);
-	}
+		if (commandMusic[i].testInput(message)) {
+			var promise = message.react("👌🏽");
+			promise.then(function(){}).catch((m) => {console.log(m);});
+			
+			commandMusic[i].func(message); // exécute la commande si la condition correcte est verifiée
+			
+			//logDebug("message","command " + message);
+		}
     }
     
     
@@ -243,10 +291,10 @@ var botSendMessage = function(message,channel,options){
     //send message (you can use .then().catch() ..)
     //options is optional
     if (message!= undefined && message!= null) {
-	return channel.send(message,options);
+		return channel.send(message,options);
     }
     else {
-	return channel.send(message);
+		return channel.send(message);
     }
 }
 
@@ -320,7 +368,7 @@ var isModoFunc = function(userID){
     /**
      * return true if the user is an modo or above
      */
-     return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+     return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId.id,asylambaServer);
 }
 
 var isBanFunc = function(userID){
@@ -360,11 +408,11 @@ var testMessageIfFollowedByMentionToBot = function(message,messageToTest){
      */
     
     var regexpMessage = new RegExp(messageToTest+" <@!"+bot.user.id+">"+"[ ]*");
-    if (regexpMessage.test(message) ) {
-	return true
-    }
+	if (regexpMessage.test(message) ) {
+		return true
+	}
     else{
-	return false
+		return false
     }
     
     
@@ -393,40 +441,158 @@ var commandPrefix = "!"; // the prefix of all command
 
 var commandMusic = [
     new commandC(
-	function(message){
-	    
-	    var reg = new RegExp('^'+commandPrefix+'play *');
-	    if(notBotFunction(message.author.id)&&reg.test(message.content)){
-		return true
-	    }
-	    else{
-		return false
-	    }
-	},
-	function(message){
-	    var temP = message.content.split(" ")
-	    var regBot = new RegExp("<@!"+bot.user.id+">");
-	    //var urlToPlay;
-	    
-	    console.log(temP);
-	    //console.log(temP.length);
-	   
-	    play(temP[1],message);
-	    if ( temP.lenght > 2 /*&& regBot.test(temP[1])*/ ) {
-		//allBotArrayModules[2].play(temP[2]);
-	    }
-	    else if(temP.lenght >1) {
-		
-		//allBotArrayModules[2].play(temP[1]);
-		
-	    }
-	    
-	    message.delete(5000);
-	   
-	    //botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
-	    //TODO modifier
-	},
-	commandPrefix+"play url", "play some music",truefunc
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'play *');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) && isModoFunc(message.author.id)){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var temP = message.content.split(" ")
+			var regBot = new RegExp("<@!"+bot.user.id+">");
+			//var urlToPlay;
+			
+			console.log(temP);
+			console.log(temP.length);
+		   var hasPlayMusic = false;
+			
+			if ( temP.lenght > 2 && regBot.test(temP[1] )) {
+				console.log(temP);
+				hasPlayMusic = playMusicAndShowIt(temP[2],[message.channel],message.guild);
+			}
+			else if(temP.lenght >1 || true) {
+				console.log(temP);
+				hasPlayMusic = playMusicAndShowIt(temP[1],[message.channel],message.guild);
+				
+			}
+			if (hasPlayMusic) {
+				message.delete(5000);
+			}
+			else{
+				//message.react("🚫");
+			}
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"play url", "play some music (owerride) (modo)",function(message){return isModoFunc(message.author.id);}
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[jJ]oin[Vv]oice[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content)){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			
+			
+			var author = message.author;
+			var guild = message.guild;
+			var chanArray = guild.channels.array();
+			var hasFindUser = false;
+			var hasFindMeConnected;
+			
+			if (guild.voiceConnection == null || guild.voiceConnection == undefined) {
+				hasFindMeConnected = false;
+			}
+			else{
+				hasFindMeConnected = true;
+			}
+			
+			var voiceChanToConnect;
+			
+			if (!hasFindMeConnected || isModoFunc(author.id)) {
+				//the modo can force bot to move ?
+				
+				for (var i in chanArray) {
+					if (chanArray[i] instanceof DiscordClient.VoiceChannel) {
+						var members = chanArray[i].members.array();
+						
+						for(var j in members){
+							if (members[j].id == author.id) {
+								hasFindUser = true;
+								voiceChanToConnect = chanArray[i];
+								//break; // we can break here for saving time
+								// the code does not fondamently chnage if you remove this break it is juste for saving time
+							}
+						}
+						
+					}
+					if (hasFindUser) {
+						//break;// we can break here for saving time
+						// the code does not fondamently chnage if you remove this break it is juste for saving time
+					}
+				}
+				
+				if (hasFindUser) {
+					voiceChanToConnect.join().then(connection =>{
+						if (hasFindMeConnected && isAdminFunc(author.id)) {
+							botSendMessage("Beloved administrator, I sucessfuly move to your channel.",message.channel);
+						}
+						else if (hasFindMeConnected && isModoFunc(author.id)) {
+							botSendMessage("Beloved moderator, I sucessfuly move to your channel.",message.channel);
+						}
+						else{
+							botSendMessage("I sucessfuly join your channel.",message.channel);
+						}
+					}).catch(error=> {
+						botSendMessage("I cannot join your channel : "+ error+".",message.channel);
+					});
+				}
+				else{
+					botSendMessage("Your are not connected to a voice channel, please connect frist and redo this commande.",message.channel);
+				}
+			}
+			else{
+				botSendMessage("I am already playng in a other channel, please use !leaveVoice before adding me to a new channel.",message.channel);
+			}
+			
+			
+		},
+		commandPrefix+"joinVoice", "Join the voice channel your are in (and for modo : force moving the bot)",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[lL]eave[Vv]oice *');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			
+			var guild = message.guild;
+			
+			
+			
+			
+			if (guild.voiceConnection == null || guild.voiceConnection == undefined) {
+				botSendMessage("I am not in any chanel on this guid.",message.channel);
+			}
+			else{
+				guild.voiceConnection.channel.leave();
+				botSendMessage("I leave the channel.",message.channel);
+				
+				
+			}
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"leavVoice", "disconect form the current voiceChannel",truefunc
     ),
 ]
 

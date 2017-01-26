@@ -22,7 +22,7 @@ var userListFaction = []; // lioste des utilisateurs
 
 var asylambaServer;
 
-
+var developBuild = true
 
 exports.bot = bot; // set by ref ? 
 
@@ -136,7 +136,7 @@ var isModoFunc = function(userID){
      * return true if the user is an modo or above
      */
 	
-	return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+	return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId.id,asylambaServer);
 }
 
 var isBanFunc = function(userID){
@@ -274,7 +274,9 @@ var command = [
     ),
     new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && isAdminFunc(message.author.id)){
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
+			//																																				Lodis
+			// TODO revoir le test pour ajouté des personnes authorisé
 			return true
 	    }
 	    else{

@@ -34,7 +34,7 @@ exports.bot = bot; // set by ref ?
  
 function success(token){
     
-    console.log("login sucessful ");
+    console.log("commadBot login sucessful ");
     bot.user.setGame("en developpement"),
     bot.user.setPresence("dnd")
     
@@ -259,7 +259,7 @@ var command = [
 				messageTemp +=  "`"+musicBot.commandMusic[i].inputDescription + "` : "+musicBot.commandMusic[i].descr+"\n";
 			}
 	    }
-	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki"
+	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
 	    
 	    if (messageTemp != "") {
 			botSendMessage(messageTemp+"",message.channel);

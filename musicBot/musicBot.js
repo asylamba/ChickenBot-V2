@@ -45,6 +45,20 @@ var asylambaServer;
 var CurrentlyPlaying =[];
 
 
+
+var playListArray=[];
+
+function PlayListObject(url,guildIdP){
+	
+	this.urlToPlayArray=[url];
+	this.guildId = guildIdP;
+	
+	this.isPlaying = false;
+	
+	this.positionPlayingNext=0;
+	
+}
+
 function playMusicObect(startP,inputTextP,channelArrayToMessageP,infoP){
     /*
      * Object for storing data about a video / music that teh bot will play
@@ -77,6 +91,13 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
     // TODO refaire proporement
    
 	console.log(url)
+	
+	/*for(var i in playListArray){
+		
+		if (playListArray[i].guildId == guild.id){
+			playListArray[i].isPlaying = true;
+		}
+	}*/
 	
 	var posOfVoiceConnection = 0;
 	var voiceConnectionsArray =bot.voiceConnections.array();
@@ -143,6 +164,8 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 					}
 					// I will try to restart it for you :thumbup::skin-tone-3:
 					
+					playNextMusic(channelArrayToMessage,guild);
+					
 					/* Not used
 					//console.log(timeOfStop);
 					//console.log(CurrentlyPlaying[posOfVoiceConnection].info);
@@ -170,6 +193,12 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				}
 			});
 			
+			stream.on("end",(m) =>{
+				
+				playNextMusic(channelArrayToMessage,guild);
+				
+			})
+			
 			const dispatcher = voiceConnection.playStream(stream, streamOptions);
 			
 			dispatcher.on("end",function(m){
@@ -177,12 +206,17 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				
 			});
 			
+			setCorrespondigPlayListToPlaying(playListArray,guild,true);
+			
 			return true;
 		}
 		catch(e){
 			for (var i in channelArrayToMessage){
 				botSendMessage("I couldn't play "+url+"\n"+e,channelArrayToMessage[i]);
 			}
+			
+			setCorrespondigPlayListToPlaying(playListArray,guild,true);
+			
 			return false;
 		}
 		finally{
@@ -193,6 +227,10 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 		for (var i in channelArrayToMessage){
 			botSendMessage("I am not in any voice channel",channelArrayToMessage[i]);
 		}
+		
+		setCorrespondigPlayListToPlaying(playListArray,guild,false);
+		
+		
 		
 		return false;
 	}
@@ -207,14 +245,91 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
     
 }
 
+
+var setCorrespondigPlayListToPlaying  = function(playListArray,guild,bool){
+	for(var i in playListArray){
+		
+		if (playListArray[i].guildId == guild.id){
+			playListArray[i].isPlaying = false;
+		}
+	}
+}
+
+
+var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
+	
+	var positionInPlayList=-1;
+	
+	for(var i in playListArray){
+		
+		if (playListArray[i].guildId == guild.id){
+			positionInPlayList=i;
+		}
+	}
+	
+	
+	if (positionInPlayList != -1) {
+		if (! playListArray[positionInPlayList].isPlaying) {
+			playNextMusic(channelArrayToMessage,guild);
+		}
+	}
+	else{
+		playListArray.push(new PlayListObject(url,guild.id));
+		positionInPlayList = playListArray.length-1;
+		console.log("a")
+		if (! playListArray[positionInPlayList].isPlaying) {
+			console.log("a")
+			playNextMusic(channelArrayToMessage,guild);
+		}
+	}
+}
+
 //exports.play = play;
 
 
+var playNextMusic = function (channelArrayToMessage,guild){
+	
+	for(var i in playListArray){
+		
+		if (playListArray[i].guildId == guild.id){
+			
+			var boolWhileNotContinue = false;
+			var hasEnterWhile = false;
+			console.log(playListArray[i].positionPlayingNext)
+			while(!boolWhileNotContinue && playListArray[i].urlToPlayArray.length >  playListArray[i].positionPlayingNext){
+				
+				
+				hasEnterWhile = true;
+				var urlToPlay = playListArray[i].urlToPlayArray[playListArray[i].positionPlayingNext];
+				
+				boolWhileNotContinue = playMusicAndShowIt(urlToPlay,channelArrayToMessage,guild);
+				
+				console.log("b");
+				
+				
+				++playListArray[i].positionPlayingNext;
+			}
+			
+			if (boolWhileNotContinue && hasEnterWhile) {
+				console.log(true)
+				playListArray[i].isPlaying = true;
+			}
+			else{
+				console.log(false)
+				playListArray[i].isPlaying = false;
+			}
+			
+			
+		}
+		
+	}
+}
+
 function success(token){
    
-    console.log("login sucessful ");
-    bot.user.setGame("en developpement"),
-    bot.user.setPresence("dnd")
+    console.log("MusicBot login sucessful ");
+    //bot.user.setGame("en developpement"),
+    //bot.user.setPresence("dnd")
     
     
 }
@@ -481,6 +596,48 @@ var commandMusic = [
 			//TODO modifier
 		},
 		commandPrefix+"play url", "play some music (owerride) (modo)",function(message){return isModoFunc(message.author.id);}
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'request *');
+			if(notBotFunction(message.author.id)&&reg.test(message.content)){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var temP = message.content.split(" ")
+			var regBot = new RegExp("<@!"+bot.user.id+">");
+			//var urlToPlay;
+			
+			console.log(temP);
+			console.log(temP.length);
+		   var hasAddedMusic = false;
+			
+			if ( temP.lenght > 2 && regBot.test(temP[1] )) {
+				console.log(temP);
+				hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild);
+			}
+			else if(temP.lenght >1 || true) {
+				console.log(temP);
+				hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild);
+				
+			}
+			if (hasAddedMusic) {
+				message.delete(5000);
+			}
+			else{
+				//message.react("🚫");
+			}
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"request url", "request a video and add it to the playlist",function(message){return isModoFunc(message.author.id);}
     ),
 	new commandC(
 		function(message){

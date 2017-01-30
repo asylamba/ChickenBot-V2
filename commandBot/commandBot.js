@@ -246,7 +246,7 @@ var command = [
 	    }
 	},
 	function(message){
-	    var messageTemp = "Liste des commandes\n`";
+	    var messageTemp = "Liste des commandes\n";
 	    for (var i in command){
 			
 			if (command[i].showHelp(message)) {

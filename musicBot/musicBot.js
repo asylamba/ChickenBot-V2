@@ -136,7 +136,7 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 			});
 			
 			
-			voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
+			//voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
 			/*voiceConnection.on("warn", (m) => {
 				console.log("[voiceConnection : warn]", m);
 				botSendMessage("The music stop playing ... I will try to restart it for you :thumbup::skin-tone-3:",message.channel)
@@ -602,7 +602,7 @@ var commandMusic = [
 			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 			//TODO modifier
 		},
-		commandPrefix+"play url", "play some music (owerride) (modo)",function(message){return isModoFunc(message.author.id);}
+		commandPrefix+"play url", "play some music (override) (modo)",function(message){return isModoFunc(message.author.id);}
     ),
 	new commandC(
 		function(message){
@@ -756,7 +756,7 @@ var commandMusic = [
 			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 			//TODO modifier
 		},
-		commandPrefix+"leavVoice", "disconect form the current voiceChannel",truefunc
+		commandPrefix+"leaveVoice", "disconect form the current voiceChannel",truefunc
     ),
 ]
 

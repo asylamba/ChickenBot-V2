@@ -195,7 +195,7 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 			
 			stream.on("end",(m) =>{
 				
-				playNextMusic(channelArrayToMessage,guild);
+				console.log("end stream "+ m)
 				
 			})
 			
@@ -203,6 +203,8 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 			
 			dispatcher.on("end",function(m){
 				// next in the PlayLits
+				console.log("end dispatcher "+ m)
+				playNextMusic(channelArrayToMessage,guild);
 				
 			});
 			
@@ -267,8 +269,10 @@ var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
 		}
 	}
 	
+	console.log(positionInPlayList)
 	
 	if (positionInPlayList != -1) {
+		playListArray[positionInPlayList].urlToPlayArray.push(url);
 		if (! playListArray[positionInPlayList].isPlaying) {
 			playNextMusic(channelArrayToMessage,guild);
 		}
@@ -282,6 +286,8 @@ var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
 			playNextMusic(channelArrayToMessage,guild);
 		}
 	}
+	
+	return true; // todo revoir
 }
 
 //exports.play = play;
@@ -296,6 +302,7 @@ var playNextMusic = function (channelArrayToMessage,guild){
 			var boolWhileNotContinue = false;
 			var hasEnterWhile = false;
 			console.log(playListArray[i].positionPlayingNext)
+			console.log(playListArray[i].urlToPlayArray)
 			while(!boolWhileNotContinue && playListArray[i].urlToPlayArray.length >  playListArray[i].positionPlayingNext){
 				
 				

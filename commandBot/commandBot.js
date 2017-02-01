@@ -35,8 +35,8 @@ exports.bot = bot; // set by ref ?
 function success(token){
     
     console.log("commadBot login sucessful ");
-    bot.user.setGame("en developpement"),
-    bot.user.setPresence("dnd")
+    //bot.user.setGame("en developpement"),
+    //bot.user.setPresence("dnd")
     
     //setTimeout(function(){process.exit(0)}, 100000);
 }
@@ -246,20 +246,21 @@ var command = [
 	    }
 	},
 	function(message){
-	    var messageTemp = "Liste des commandes\n";
+	    var messageTemp = "**Liste des commandes**\nGénérale  ```";
 	    for (var i in command){
 			
 			if (command[i].showHelp(message)) {
-				messageTemp +=  "`"+command[i].inputDescription + "` : "+command[i].descr+"\n";
+				messageTemp +=  ""+command[i].inputDescription + " : "+command[i].descr+"\n";
 			}
 	    }
-	    
+	    messageTemp += "```\nMusic ```";
 	    for (var i in musicBot.commandMusic){
 			if (musicBot.commandMusic[i].showHelp(message)) {
-				messageTemp +=  "`"+musicBot.commandMusic[i].inputDescription + "` : "+musicBot.commandMusic[i].descr+"\n";
+				messageTemp +=  ""+musicBot.commandMusic[i].inputDescription + " : "+musicBot.commandMusic[i].descr+"\n";
 			}
 	    }
-	    messageTemp += "\nPour plus d'information sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
+		messageTemp +="```";
+	    messageTemp += "Pour plus d'information, consultez sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
 	    
 	    if (messageTemp != "") {
 			botSendMessage(messageTemp+"",message.channel);

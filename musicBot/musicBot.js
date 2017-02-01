@@ -25,6 +25,9 @@ This file is part of Chicken Bot.
 var path = require("path");
 
 const ytdl = require('ytdl-core');
+var ytdl2 = require('youtube-dl');
+
+
 const streamOptions = { seek: 0, volume: 0.25 };
 
 
@@ -48,14 +51,47 @@ var CurrentlyPlaying =[];
 
 var playListArray=[];
 
-function PlayListObject(url,guildIdP){
+function PlayListObject(url,guildIdP,channelArrayToResponce){
 	
-	this.urlToPlayArray=[url];
+	this.urlToPlayArray=[];
+	this.isValidUrlArray=[]; // say if the url at the same pos is a valide video
+	
+	this.musicInfoArray=[]
+	
 	this.guildId = guildIdP;
+	
+	
 	
 	this.isPlaying = false;
 	
 	this.positionPlayingNext=0;
+	
+	this.addElementAndDisplayMessage = function(url,channelArrayToResponce){
+		this.urlToPlayArray.push(url);
+		this.isValidUrlArray.push(true);
+		this.musicInfoArray.push(null);
+		
+		var temp = this
+		var l = this.musicInfoArray.length-1;
+		
+		console.log(url)
+		
+		ytdl2.getInfo(url,[],function(err,info){
+			if (info != undefined && info.title != undefined) {
+				for(var i in channelArrayToResponce){
+					//console.log(info)
+					
+					botSendMessage("added `"+info.title+"` to the playlist",channelArrayToResponce[i]);
+				}
+				temp.musicInfoArray[l] = info;
+			}
+			else{
+				temp.isValidUrlArray[l] = false;
+			}
+		});
+	};
+	
+	this.addElementAndDisplayMessage(url,channelArrayToResponce);
 	
 }
 
@@ -119,7 +155,11 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 			CurrentlyPlaying[posOfVoiceConnection] = new playMusicObect(Date.now(),url,channelArrayToMessage,null);
 			
 			//TODO revoir un peu
-			ytdl.getInfo(url,function(err,info){
+			
+			/*
+			 * Old module
+			 *
+			 *ytdl.getInfo(url,function(err,info){
 				CurrentlyPlaying[posOfVoiceConnection].info = info;
 				if (info != undefined && info.title != undefined ) {
 					for (var i in channelArrayToMessage){
@@ -133,7 +173,7 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				}
 				
 				
-			});
+			});*/
 			
 			
 			//voiceConnection.on("debug", (m) => console.log("[voiceConnection : debug]", m));
@@ -141,7 +181,9 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				console.log("[voiceConnection : warn]", m);
 				botSendMessage("The music stop playing ... I will try to restart it for you :thumbup::skin-tone-3:",message.channel)
 			});*/
+			
 			var stream;
+			/* OLD ytdl module
 			if (rangeP == undefined || rangeP==null || rangeP=="") {
 				
 				stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});//,range:'1000-1100000'}); //
@@ -152,11 +194,35 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				//stream= ytdl(url, {filter : 'audioonly',quality:'lowest',range:rangeP}); // DO NOT WORK ! API bug
 				stream= ytdl(url, {filter : 'audioonly',quality:'lowest'});
 			}
+			*/
+			
+			stream = ytdl2(url,['-x', '--audio-format', 'mp3']);
+			
+			stream.on('info',function(info){
+				CurrentlyPlaying[posOfVoiceConnection].info = info;
+				if (info != undefined && info.title != undefined ) {
+					for (var i in channelArrayToMessage){
+						botSendMessage("Now playing : `" + CurrentlyPlaying[posOfVoiceConnection].info.title+"`" ,channelArrayToMessage[i]);
+					}
+					//console.log(info.length_seconds);
+					//console.log(info.timestamp)
+				}
+				else{
+					console.log(err);
+				}
+			});
 			
 			stream.on("error", (m) => {
 				var errStreamStopRegExp = new RegExp("Error: read ECONNRESET");
 				
 				if (errStreamStopRegExp.test(m)) {
+					/*
+					 *
+					 * Old module error
+					 *
+					 */
+					
+					
 					var timeOfStop = Date.now();
 					console.log("[stream : error] ", m);
 					for (var i in channelArrayToMessage){
@@ -164,7 +230,6 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 					}
 					// I will try to restart it for you :thumbup::skin-tone-3:
 					
-					playNextMusic(channelArrayToMessage,guild);
 					
 					/* Not used
 					//console.log(timeOfStop);
@@ -189,8 +254,14 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 					console.log("[stream : error] ", m);
 					for (var i in channelArrayToMessage){
 						botSendMessage("The music stop playing... Unknown error",channelArrayToMessage[i]);
+						console.log(m)
 					}
 				}
+				
+				setTimeout(function(){
+					playNextMusic(channelArrayToMessage,guild);
+				},1000);
+				
 			});
 			
 			stream.on("end",(m) =>{
@@ -258,7 +329,13 @@ var setCorrespondigPlayListToPlaying  = function(playListArray,guild,bool){
 }
 
 
-var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
+const findPositionOfThePlaylistObject = function (guild){
+	/* return the position in playListArray of the playlist of the guild given in input
+	 *
+	 * retrun -1 if it does not exist
+	 *
+	 *
+	 */
 	
 	var positionInPlayList=-1;
 	
@@ -269,20 +346,31 @@ var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
 		}
 	}
 	
+	return positionInPlayList;
+}
+
+var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
+	
+	//var positionInPlayList=-1;
+	
+	const positionInPlayList = findPositionOfThePlaylistObject(guild);
+	
+	
 	console.log(positionInPlayList)
 	
 	if (positionInPlayList != -1) {
-		playListArray[positionInPlayList].urlToPlayArray.push(url);
+		//playListArray[positionInPlayList].urlToPlayArray.push(url);
+		playListArray[positionInPlayList].addElementAndDisplayMessage(url,channelArrayToMessage);
 		if (! playListArray[positionInPlayList].isPlaying) {
 			playNextMusic(channelArrayToMessage,guild);
 		}
 	}
 	else{
-		playListArray.push(new PlayListObject(url,guild.id));
-		positionInPlayList = playListArray.length-1;
-		console.log("a")
+		playListArray.push(new PlayListObject(url,guild.id,channelArrayToMessage));
+		const positionInPlayList = playListArray.length-1;
+		//console.log("a")
 		if (! playListArray[positionInPlayList].isPlaying) {
-			console.log("a")
+			//console.log("a")
 			playNextMusic(channelArrayToMessage,guild);
 		}
 	}
@@ -303,7 +391,7 @@ var playNextMusic = function (channelArrayToMessage,guild){
 			var hasEnterWhile = false;
 			console.log(playListArray[i].positionPlayingNext)
 			console.log(playListArray[i].urlToPlayArray)
-			while(!boolWhileNotContinue && playListArray[i].urlToPlayArray.length >  playListArray[i].positionPlayingNext){
+			while(!boolWhileNotContinue && playListArray[i].urlToPlayArray.length >  playListArray[i].positionPlayingNext && playListArray[i].isValidUrlArray[playListArray[i].positionPlayingNext]){
 				
 				
 				hasEnterWhile = true;
@@ -360,6 +448,8 @@ exports.init = function(token,allBotArrayPara){
 
 bot.on('ready', function() { // quand le bot est pret
     
+	bot.user.setGame("!help");
+	
     var serverList = bot.guilds.array();//
     
     for (var i in serverList){
@@ -565,7 +655,7 @@ var commandMusic = [
     new commandC(
 		function(message){
 			
-			var reg = new RegExp('^'+commandPrefix+'play *');
+			var reg = new RegExp('^'+commandPrefix+'play .*');
 			if(notBotFunction(message.author.id)&&reg.test(message.content) && isModoFunc(message.author.id)){
 				return true
 			}
@@ -634,10 +724,12 @@ var commandMusic = [
 				
 			}
 			if (hasAddedMusic) {
+				//botSendMessage("Added music to playList",message.channel)
 				message.delete(5000);
 			}
 			else{
 				//message.react("🚫");
+				botSendMessage("error while adding the music to the play list.",message.channel)
 			}
 			
 		   
@@ -728,7 +820,7 @@ var commandMusic = [
 	new commandC(
 		function(message){
 			
-			var reg = new RegExp('^'+commandPrefix+'[lL]eave[Vv]oice *');
+			var reg = new RegExp('^'+commandPrefix+'[lL]eave[Vv]oice[ ]*$');
 			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
 				return true
 			}
@@ -757,6 +849,83 @@ var commandMusic = [
 			//TODO modifier
 		},
 		commandPrefix+"leaveVoice", "disconect form the current voiceChannel",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[sS]kip[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			
+			botSendMessage("Skiping music.",message.channel);
+			playNextMusic([message.channel],message.guild);
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"skip", "skip the current music and passes to the next",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			const reg = new RegExp('^'+commandPrefix+'[Pp]lay[Ll]ist[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			
+			
+			const posPlaylistObj = findPositionOfThePlaylistObject(message.guild);
+			
+			//playlistGuild = new PlayListObject(a,b);
+			if (posPlaylistObj != -1) {
+				const playlistGuild =  playListArray[posPlaylistObj];
+				console.log(playListArray[posPlaylistObj])
+				if (! playlistGuild.isPlaying) {
+					botSendMessage("I am not playing rigth now in your channel.",message.channel)
+				}
+				else if (playlistGuild.positionPlayingNext >= playlistGuild.urlToPlayArray.length) {
+					botSendMessage("There is no music after this one",message.channel);
+					
+				}
+				else{
+					var messageToSend = "The next music are : ```"
+					
+					for (var i =playlistGuild.positionPlayingNext ; i< playlistGuild.urlToPlayArray.length;++i){
+						if (playlistGuild.isValidUrlArray[i]) {
+							
+							
+							const info = playlistGuild.musicInfoArray[i];
+							
+							if (info != null && info != undefined) {
+								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" "+info.title+"";
+							}
+							else{
+								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" *retriving data*";
+							}
+						}
+						
+					}
+					messageToSend += "```\n "
+					botSendMessage(messageToSend,message.channel)
+				}
+			}
+			else{
+				botSendMessage("I am not playing rigth now in your channel.",message.channel)
+			}
+			
+		},
+		commandPrefix+"playlist", "Show the current playlist",truefunc
     ),
 ]
 

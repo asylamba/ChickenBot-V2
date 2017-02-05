@@ -68,6 +68,8 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 	
 	this.musicInfoArray=[]
 	
+	this.requesterArray =[];
+	
 	this.guildId = guildIdP;
 	
 	
@@ -76,11 +78,11 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 	
 	this.positionPlayingNext=0;
 	
-	this.addElementAndDisplayMessage = function(url,channelArrayToResponce){
+	this.addElementAndDisplayMessage = function(url,channelArrayToResponce,author){
 		this.urlToPlayArray.push(url);
 		this.isValidUrlArray.push(true);
 		this.musicInfoArray.push(null);
-		
+		this.requesterArray.push(author);
 		var temp = this
 		var l = this.musicInfoArray.length-1;
 		
@@ -91,7 +93,7 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 				for(var i in channelArrayToResponce){
 					//console.log(info)
 					
-					botSendMessage("added `"+info.title+"` to the playlist",channelArrayToResponce[i]);
+					botSendMessage("added `"+info.title+"` to the playlist requested by " +author.username +" (<@"+author.id +">)",channelArrayToResponce[i]);
 				}
 				temp.musicInfoArray[l] = info;
 			}
@@ -160,10 +162,13 @@ function MusicListContainer(musiArrayP){
 		for(var i in this.musiArray){
 			var level = this.musiArray[i].getLike(userArray);
 			if (level > 0 && this.musiArray[i].isValid && ! this.musiArray[i].isBan) { // take only valid non banned music
+				
 				totalLevel += level;
 				likeArrayMusicObject.push({url: this.musiArray[i].url, like:level});
+				
 			}
 		}
+		console.log(likeArrayMusicObject);
 		if (likeArrayMusicObject.length>0) {
 			var randomNumber = Math.random()*(totalLevel);
 			var currentLevel =0;
@@ -182,6 +187,20 @@ function MusicListContainer(musiArrayP){
 			return null;
 		}
 		
+	}
+	
+	this.getLikeLevel = function (url){
+		
+		var level = 0
+		for (var i in this.musiArray){
+			if (his.musiArray[i].url == url) {
+				level = this.musiArray[i].getTotalLike();
+			}
+			
+			
+		}
+		
+		return level;
 	}
 	
 	
@@ -487,7 +506,7 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 				}
 				
 				setTimeout(function(){
-					playNextMusic(channelArrayToMessage,guild);
+					//playNextMusic(channelArrayToMessage,guild);
 				},1000);
 				
 			});
@@ -580,7 +599,7 @@ const findPositionOfThePlaylistObject = function (guild){
 	return positionInPlayList;
 }
 
-var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
+var addVideoToPlayList = function(url,channelArrayToMessage,guild,author,rangeP){
 	
 	//var positionInPlayList=-1;
 	
@@ -591,13 +610,13 @@ var addVideoToPlayList = function(url,channelArrayToMessage,guild,rangeP){
 	
 	if (positionInPlayList != -1) {
 		//playListArray[positionInPlayList].urlToPlayArray.push(url);
-		playListArray[positionInPlayList].addElementAndDisplayMessage(url,channelArrayToMessage);
+		playListArray[positionInPlayList].addElementAndDisplayMessage(url,channelArrayToMessage,author);
 		if (! playListArray[positionInPlayList].isPlaying) {
 			playNextMusic(channelArrayToMessage,guild);
 		}
 	}
 	else{
-		playListArray.push(new PlayListObject(url,guild.id,channelArrayToMessage));
+		playListArray.push(new PlayListObject(url,guild.id,channelArrayToMessage,author));
 		const positionInPlayList = playListArray.length-1;
 		//console.log("a")
 		if (! playListArray[positionInPlayList].isPlaying) {
@@ -658,8 +677,9 @@ var playNextMusic = function (channelArrayToMessage,guild){
 							var urlTemp2 = musicList.getRandomMusicBasedOnLikeLevel(userArray);
 							console.log(urlTemp2);
 							if (urlTemp2 != null) {
-								playListArray[i].isPlaying = playMusicAndShowIt(urlTemp2,channelArrayToMessage,guild);
-								
+								//playListArray[i].isPlaying = playMusicAndShowIt(urlTemp2,channelArrayToMessage,guild);
+								//;
+								setTimeout(function(){addVideoToPlayList(urlTemp2,channelArrayToMessage,guild,bot.user)},1000)
 							}
 							
 						}
@@ -668,15 +688,20 @@ var playNextMusic = function (channelArrayToMessage,guild){
 					}
 				}
 				
-				if ( playListArray[i].isPlaying == false){
+				/*if ( playListArray[i].isPlaying == false){
 					for(var i in channelArrayToMessage){
 						botSendMessage("there is no more music to play.",channelArrayToMessage[i])
 					}
+					
 				}
 				else{
 					for(var i in channelArrayToMessage){
 						botSendMessage("there is no more music to play. I chose one that you may like",channelArrayToMessage[i])
 					}
+				}*/
+				
+				for(var i in channelArrayToMessage){
+					botSendMessage("There is no more music to play. I choose one that you may !like",channelArrayToMessage[i])
 				}
 				
 			}
@@ -999,12 +1024,12 @@ var commandMusic = [
 				
 				if ( temP.lenght > 2 && regBot.test(temP[1] )) {
 					console.log(temP);
-					hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild);
+					hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild,message.author);
 					musicList.addMusicToList(temP[2]);
 				}
 				else if(temP.lenght >1 || true) {
 					console.log(temP);
-					hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild);
+					hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild,message.author);
 					musicList.addMusicToList(temP[1]);
 					
 				}
@@ -1196,12 +1221,15 @@ var commandMusic = [
 							
 							
 							const info = playlistGuild.musicInfoArray[i];
+							const urlTemp3 = playlistGuild.musicInfoArray[i].url;
+							
+							var author = playlistGuild.requesterArray[i];
 							
 							if (info != null && info != undefined) {
-								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" "+info.title+"";
+								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" "+info.title+" --requested by " +author.username +" (<@"+author.id +">)"+"  like:" + musicList.getLikeLevel(urlTemp3);
 							}
 							else{
-								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" *retriving data*";
+								messageToSend+= "\n - "+(i-playlistGuild.positionPlayingNext+1)+" *retriving data* --requested by " +author.username +" (<@"+author.id +">)"+"  like:"+ musicList.getLikeLevel(urlTemp3);
 							}
 						}
 						

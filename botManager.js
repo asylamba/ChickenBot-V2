@@ -58,6 +58,7 @@ fs.readFile('loginServeur.txt','ascii', function (err, data) { // lit les login 
 		
 		mainBot.init(tokenMainBot,allBotArrayModules);  
 		commandBot.init(tokenCommandBot,allBotArrayModules);
+		console.log("test A")
 		musicBot.init(tokenMusicBot,allBotArrayModules)
     });
     

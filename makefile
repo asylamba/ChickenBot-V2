@@ -37,7 +37,7 @@ SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFo
 
 OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 
-.PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean updatePart1 updatePart2
+.PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean updatePart1 updatePart2 cpMakeFile makeDir
 #--------------------------
 
 make = make
@@ -47,6 +47,14 @@ make = make
 
 all: update
 
+makeDir:
+	mkdir commandBot
+	mkdir data
+	mkdir data_bot
+	mkdir doc
+	mkdir mainBot
+	mkdir musicBot
+	mkdir test
 
 
 
@@ -57,13 +65,16 @@ updatePart1: $(nameOfSourceCodeArchive) unzipArchive
 
 updatePart2: $(OBJ_FILES_CODE) clean
 
-#update: $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
+update: cpMakeFile $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
 #temp solution
 
-update: 
-	$(make) updatePart1
+cpMakeFile:
 	$(cp) $(nameOfArchiveSubFolder)/makefile makefile
-	$(make) updatePart2
+
+#update: 
+#	$(make) updatePart1
+#	$(cp) $(nameOfArchiveSubFolder)/makefile makefile
+#	$(make) updatePart2
 	 
 
 $(nameOfSourceCodeArchive):

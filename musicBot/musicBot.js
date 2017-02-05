@@ -732,6 +732,8 @@ function err(error){
 
 
 exports.init = function(token,allBotArrayPara){
+	console.log("test")
+	
     allBotArrayModules = allBotArrayPara;
     
 	

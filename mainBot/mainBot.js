@@ -94,13 +94,34 @@ bot.on('ready', function() { // quand le bot est pret
 });
 
 
+exports.isReadyToStop = false;
+exports.stop = function(){
+	bot.destroy();
+	exports.isReadyToStop = true;
+}
+
 exports.exit = function(){
     /*
      * Kill all the bot and close the programe
      */
     
     for (var i in allBotArrayModules) {
-		allBotArrayModules[i].bot.destroy();
+		//allBotArrayModules[i].bot.destroy();
+		allBotArrayModules[i].stop();
     }
-    setTimeout(function(){process.exit(0)},2000);
+	
+	var exitCodeWhenReady= function(){
+		var exitBool = true;
+		for (var i in allBotArrayModules){
+			exitBool = exitBool && allBotArrayModules[i].isReadyToStop;
+		}
+		if (exitBool) {
+			setTimeout(function(){process.exit(0)},1000);
+		}
+		else{
+			setTimeout (exitCodeWhenReady,1000);
+		}
+	}
+	
+    setTimeout(exitCodeWhenReady,1000);
 }

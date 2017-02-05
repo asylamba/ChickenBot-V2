@@ -23,6 +23,7 @@ This file is part of Chicken Bot.
 "use strict";
 
 var path = require("path");
+var fs = require('fs');
 
 const ytdl = require('ytdl-core');
 var ytdl2 = require('youtube-dl');
@@ -47,9 +48,18 @@ var asylambaServer;
 
 var CurrentlyPlaying =[];
 
+const musicListFilePath =path.join(__dirname, '/../','data_bot/musicList.json')
+
+var musicList ; // the music Array Object
 
 
 var playListArray=[];
+
+var playRandomMusicWhenNoMusicIsInThePlayList = true;
+
+
+
+// TODO lock objet ?
 
 function PlayListObject(url,guildIdP,channelArrayToResponce){
 	
@@ -94,6 +104,176 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 	this.addElementAndDisplayMessage(url,channelArrayToResponce);
 	
 }
+
+
+function MusicListContainer(musiArrayP){
+	
+	this.musiArray = musiArrayP;
+	
+	this.addMusicToList = function(url){
+		this.musiArray.push(new MusicObject(url));
+		this.saveMusic();
+	}
+	
+	this.likeMusic = function(user,url,level){
+		for(var i in this.musiArray){
+			if (this.musiArray[i].url == url) {
+				this.musiArray[i].like(user,level);
+			}
+		}
+	}
+	
+	this.getRandomMusicBasedOnLikeLevel = function(userArray){
+		/**
+		 * get a random music based on like level of a liste of user
+		 * the more the music il like the more the music has chance to be selectionned
+		 *
+		 *
+		 */
+		var likeArrayMusicObject = [];
+		var totalLevel = 0;
+		for(var i in this.musiArray){
+			var level = this.musiArray[i].getLike(userArray);
+			if (level > 0 && this.musiArray[i].isValid && ! this.musiArray[i].isBan) { // take only valid non banned music
+				totalLevel += level;
+				likeArrayMusicObject.push({url: this.musiArray[i].url, like:level});
+			}
+		}
+		if (likeArrayMusicObject.length>0) {
+			var randomNumber = Math.random()*(totalLevel);
+			var currentLevel =0;
+			
+			for(var i in likeArrayMusicObject){
+				currentLevel += likeArrayMusicObject[i].like;
+				if (currentLevel > randomNumber) {
+					return likeArrayMusicObject[i].url;
+				}
+			}
+			return null;
+			
+			
+		}
+		else{
+			return null;
+		}
+		
+	}
+	
+	
+	this.saveMusic = function(callback){
+		fs.writeFile(musicListFilePath,JSON.stringify(this.musiArray),callback);
+	}
+	
+}
+
+
+function MusicObject(url){
+	this.url = url;
+	this.isValid = true;
+	this.info = null;
+	
+	this.isBan = false;
+	
+	var temp = this
+	
+	this.likeArray = [];
+	
+	
+	ytdl2.getInfo(url,[],function(err,info){
+		if (info != undefined && info.title != undefined) {
+			
+			//temp.info = info;
+		}
+		else{
+			temp.isValid = false;
+		}
+	});
+	
+	
+	this.like = function (user,likeLevelP){
+		/*
+		 * like the music
+		 *
+		 */
+		var pos = -1;
+		var hasLike = false;
+		for (var i in likeArray){
+			if (this.likeArray[i].userId == user.id) {
+				pos = i;
+				hasLike = this.likeArray[i].changeLike(user,likeLevelP);
+			}
+		}
+		if (pos ==-1) {
+			this.likeArray.push(new likeObject(user,likeLevelP));
+			return true;
+		}
+		else{
+			return hasLike;
+		}
+		
+	}
+	
+	this.getTotalLike = function(){
+		var likeL = 0;
+		for (var i in this.likeArray){
+			likeL += this.likeArray[i].likeLevel;
+		}
+		
+		
+		return likeL;
+	}
+	
+	this.getLike = function(userArray){
+		var likeL = 0;
+		for (var i in this.likeArray){
+			for (var j in userArray){
+				if (this.likeArray[i].userId ==userArray[j].id) {
+					likeL += this.likeArray[i].likeLevel;
+					break; // to save time
+				}
+			}
+			
+		}
+		
+		
+		return likeL;
+	}
+	
+	
+}
+
+function likeObject(user,likeLevelP) {
+	/* ojbect reprensenting a like level of a user
+	 *
+	 * input:
+	 *     - user the discord user
+	 *     - likeLevelP an interger representig the like level : 1 like, 0 neutral, -1 dislike
+	 * 
+	 */
+	
+	
+	
+	this.userId = userList.id;
+	this.likeLevel = likeLevelP;
+	
+	this.changeLike = function (user,likeLevelP){
+		if (user.id == this.userId ) {
+			this.likeLevel= likeLevelP;
+			return true;
+		}
+		else{
+			return false;
+		}
+		
+	}
+	
+	
+	this.isLike = function(){return this.likeLevel > 0;};
+	this.isUnlike = function(){return this.likeLevel < 0;};
+	this.isNeutral = function(){return this.likeLevel == 0;};
+	
+}
+
 
 function playMusicObect(startP,inputTextP,channelArrayToMessageP,infoP){
     /*
@@ -319,6 +499,9 @@ var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
 }
 
 
+
+
+
 var setCorrespondigPlayListToPlaying  = function(playListArray,guild,bool){
 	for(var i in playListArray){
 		
@@ -411,7 +594,32 @@ var playNextMusic = function (channelArrayToMessage,guild){
 			}
 			else{
 				console.log(false)
+				
 				playListArray[i].isPlaying = false;
+				
+				
+				if (playRandomMusicWhenNoMusicIsInThePlayList) {
+					
+					if (guild.available) {
+						
+						
+						var voiceConnectionTemp = guild.voiceConnection;
+						
+						if (voiceConnectionTemp != null && voiceConnectionTemp!= undefined) {
+							var userArray = voiceConnectionTemp.channel.members.array();
+							playListArray[i].isPlaying = playMusicAndShowIt(musicList.getRandomMusicBasedOnLikeLevel(userArray),channelArrayToMessage,guild);
+						}
+						
+						
+					}
+				}
+				
+				if ( playListArray[i].isPlaying == false){
+					for(var i in channelArrayToMessage){
+						botSendMessage("there is no more music to play.",channelArrayToMessage[i])
+					}
+				}
+				
 			}
 			
 			
@@ -441,8 +649,18 @@ function err(error){
 
 exports.init = function(token,allBotArrayPara){
     allBotArrayModules = allBotArrayPara;
-    bot.login(token).then(success).catch(err);
     
+	
+	
+    fs.readFile(musicListFilePath,'utf8', function (err, data) { // lit la liste des votes
+		
+		
+		musicList = new MusicListContainer(JSON.parse(data.toString('utf8'))); // parse
+		bot.login(token).then(success).catch(err);
+		
+		
+		
+	});
 }
 
 
@@ -675,10 +893,12 @@ var commandMusic = [
 			if ( temP.lenght > 2 && regBot.test(temP[1] )) {
 				console.log(temP);
 				hasPlayMusic = playMusicAndShowIt(temP[2],[message.channel],message.guild);
+				musicList.addMusicToList(temP[2]);
 			}
 			else if(temP.lenght >1 || true) {
 				console.log(temP);
 				hasPlayMusic = playMusicAndShowIt(temP[1],[message.channel],message.guild);
+				musicList.addMusicToList(temP[1]);
 				
 			}
 			if (hasPlayMusic) {
@@ -712,15 +932,17 @@ var commandMusic = [
 			
 			console.log(temP);
 			console.log(temP.length);
-		   var hasAddedMusic = false;
+			var hasAddedMusic = false;
 			
 			if ( temP.lenght > 2 && regBot.test(temP[1] )) {
 				console.log(temP);
 				hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild);
+				musicList.addMusicToList(temP[2]);
 			}
 			else if(temP.lenght >1 || true) {
 				console.log(temP);
 				hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild);
+				musicList.addMusicToList(temP[1]);
 				
 			}
 			if (hasAddedMusic) {
@@ -930,3 +1152,16 @@ var commandMusic = [
 ]
 
 exports.commandMusic = commandMusic;
+
+
+
+
+exports.isReadyToStop = false;
+
+exports.stop = function(){
+	musicList.saveMusic(function(err){
+		bot.destroy();
+		exports.isReadyToStop = true;
+	});
+}
+

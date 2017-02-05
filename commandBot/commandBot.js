@@ -357,3 +357,11 @@ var command = [
 ];
 
 exports.command = command;
+
+
+
+exports.isReadyToStop = false;
+exports.stop = function(){
+	bot.destroy();
+	exports.isReadyToStop = true;
+}

@@ -6,3 +6,4 @@ music/
 npm-debug.log
 log-bot*.txt
 Note.txt
+data_bot/musicList.json

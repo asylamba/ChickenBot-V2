@@ -13,12 +13,16 @@ var roleUtils =  require(path.join(__dirname, '/../','data/role.js'));
 
 var allBotArrayModules;
 
+var musicBot;
+
 var bot = new DiscordClient.Client();
 
 var userListFaction = []; // lioste des utilisateurs
 
 
 var asylambaServer;
+
+var developBuild = true
 
 exports.bot = bot; // set by ref ? 
 
@@ -30,9 +34,9 @@ exports.bot = bot; // set by ref ?
  
 function success(token){
     
-    console.log("login sucesseful ");
-    bot.user.setGame("en developpement"),
-    bot.user.setPresence("dnd")
+    console.log("commadBot login sucessful ");
+    //bot.user.setGame("en developpement"),
+    //bot.user.setPresence("dnd")
     
     //setTimeout(function(){process.exit(0)}, 100000);
 }
@@ -49,6 +53,7 @@ exports.init = function(token,allBotArrayPara){
     allBotArrayModules = allBotArrayPara;
     bot.login(token).then(success).catch(err);
     
+    musicBot = allBotArrayModules[2];
     
 }
 
@@ -59,9 +64,9 @@ bot.on('ready', function() { // quand le bot est pret
     var serverList = bot.guilds.array();//
     
     for (var i in serverList){
-	if (serverList[i].id ==serverUtils.rootServerId ) {
-	    asylambaServer = serverList[i];
-	}
+		if (serverList[i].id ==serverUtils.rootServerId ) {
+			asylambaServer = serverList[i];
+		}
     }
     
     
@@ -76,10 +81,14 @@ bot.on('message', function(message) { // quand le bot est pret
     //todo les disable enable ect
     
     for(var i in command){
-	if (command[i].testInput(message)) {
-	    command[i].func(message); // exécute la commande si la condition correcte est verifiée
-	    //logDebug("message","command " + message);
-	}
+		if (command[i].testInput(message)) {
+			
+			var promise = message.react("👌🏽");
+			promise.then(function(){}).catch((m) => {console.log(m);});
+			
+			command[i].func(message); // exécute la commande si la condition correcte est verifiée
+			//logDebug("message","command " + message);
+		}
     }
     
     
@@ -89,7 +98,7 @@ bot.on('message', function(message) { // quand le bot est pret
 
 
 var isUserOfRole = function(userID,roleID,serverObj){
-    // this is kind of slow but i am not stick with the user list => may write function more rapid
+    // this is  slow but i am not stick with the user list => may write function more rapid
     /**
      * fiunction given a user id and a roleid says if the user has the role on the server
      *
@@ -98,20 +107,19 @@ var isUserOfRole = function(userID,roleID,serverObj){
     var userListFactionTemp = serverObj.members.array()
     
     if (userListFactionTemp != undefined) {
-	for(var i in userListFactionTemp){
-	   
-	    if (userID ==userListFactionTemp[i].id ) {
-		var rolesOfUser = userListFactionTemp[i].roles.array();
-		
-		for (var j in rolesOfUser){
-		    
-		    if (rolesOfUser[j].id == roleID) {
-			
-			return true;
-		    }
+		for(var i in userListFactionTemp){
+		   
+			if (userID ==userListFactionTemp[i].id ) {
+				var rolesOfUser = userListFactionTemp[i].roles.array();
+				
+				for (var j in rolesOfUser){
+					
+					if (rolesOfUser[j].id == roleID) {
+						return true;
+					}
+				}
+			}
 		}
-	    }
-	}
     }
     return false;
 }
@@ -127,12 +135,19 @@ var isModoFunc = function(userID){
     /**
      * return true if the user is an modo or above
      */
-     return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId,asylambaServer);
+	
+	return isUserOfRole(userID,roleUtils.modoRoleId.id,asylambaServer) || isUserOfRole(userID,roleUtils.adminRoleId.id,asylambaServer);
 }
 
 var isBanFunc = function(userID){
     return isUserOfRole(userID,roleUtils.banRole.id,asylambaServer)
 }
+
+var notBotFunction = function(userID){
+    return !(bot.user.id == userID);
+    
+}
+
 /**********************************************************************************/
 // bot related function
 
@@ -140,10 +155,10 @@ var botSendMessage = function(message,channel,options){
     //send message (you can use .then().catch() ..)
     //options is optional
     if (message!= undefined && message!= null) {
-	return channel.send(message,options);
+		return channel.send(message,options);
     }
     else {
-	return channel.send(message);
+		return channel.send(message);
     }
 }
 
@@ -178,10 +193,10 @@ var testMessageIfFollowedByMentionToBot = function(message,messageToTest){
     
     var regexpMessage = new RegExp(messageToTest+" <@!"+bot.user.id+">"+"[ ]*");
     if (regexpMessage.test(message) ) {
-	return true
+		return true
     }
     else{
-	return false
+		return false
     }
     
     
@@ -196,7 +211,7 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
      * 
      */
     
-    return message==messageToTest || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
+    return messageToTest == message || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
     
 }
@@ -223,42 +238,50 @@ var command = [
     ),
     new commandC(
 	function(message){
-		if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"help")){
-		    return true
-		}
-		else{
-		    return false
-		}
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"help")){
+			return true
+	    }
+	    else{
+			return false
+	    }
 	},
 	function(message){
-		var messageTemp = "";
-		for (var i in command){
-		    
-		    if (command[i].showHelp(message)) {
-			messageTemp +=  command[i].inputDescription + " : "+command[i].descr+"\n";
-		    }
-		}
-		if (messageTemp != "") {
-		    botSendMessage(messageTemp,message.channel);
-		}
-		else{
-		    botSendMessage("no help to show",message.channel);
-		}
-		//bot.sendMessage({
-		//	to: channelID,
-		//	message: messageTemp
-		//});
+	    var messageTemp = "**Liste des commandes**\nGénérale  ```";
+	    for (var i in command){
+			
+			if (command[i].showHelp(message)) {
+				messageTemp +=  ""+command[i].inputDescription + " : "+command[i].descr+"\n";
+			}
+	    }
+	    messageTemp += "```\nMusic ```";
+	    for (var i in musicBot.commandMusic){
+			if (musicBot.commandMusic[i].showHelp(message)) {
+				messageTemp +=  ""+musicBot.commandMusic[i].inputDescription + " : "+musicBot.commandMusic[i].descr+"\n";
+			}
+	    }
+		messageTemp +="```";
+	    messageTemp += "Pour plus d'information, consultez sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
+	    
+	    if (messageTemp != "") {
+			botSendMessage(messageTemp+"",message.channel);
+	    }
+	    else{
+			botSendMessage("no help to show",message.channel);
+	    }
+	    
 	    
 	},
 	commandPrefix+"help", "affiche la liste des commandes",truefunc
     ),
     new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && isAdminFunc(message.author.id)){
-		return true
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
+			//																																				Lodis
+			// TODO revoir le test pour ajouté des personnes authorisé
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
@@ -288,10 +311,10 @@ var command = [
     new commandC(
 	function(message){
 	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"about")){
-		return true
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
@@ -300,23 +323,36 @@ var command = [
 			   "Mon dépôt git se trouve sous TODO \n\n entrez \"!help\" pour voir la liste de mes commandes",message.channel);
 	    //TODO modifier
 	},
-	commandPrefix+"about", "A MORT HELIOR",truefunc
+	commandPrefix+"about", "a propos du bot",truefunc
     ),
-     new commandC(
+    new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"command")){
-		return true
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"commande")){
+			return true
 	    }
 	    else{
-		return false
+			return false
 	    }
 	},
 	function(message){
 		
 	    botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+	    
+	    
+	    /*var calback = function(message){
+		var reaction = message.reactions.array()[0].emoji;
+		
+		console.log(reaction);
+		
+		//botSendMessage(reaction.name+"  :  "+reaction.id +"  :  "+reaction.identifier+"",message.channel)
+		message.react(reaction);
+	    }
+	    
+	    setTimeout(function(){calback(message)},10000,message)
+	    */
 	    //TODO modifier
 	},
-	commandPrefix+"command", "",truefunc
+	commandPrefix+"commande", "",truefunc
     ),
 ];
 

@@ -2,7 +2,7 @@ npm = npm
 npmInstallFlag= install 
 npmEndFlag = --save
 
-nodeJsLib = discord.js basic-auth uws erlpack
+nodeJsLib = discord.js basic-auth uws ytdl-core youtube-dl
 
 #-----------------------
 

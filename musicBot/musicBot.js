@@ -742,7 +742,7 @@ exports.init = function(token,allBotArrayPara){
 		
 		
 		musicList = new MusicListContainer(JSON.parse(data.toString('utf8'))); // parse
-		bot.login(token).then(success).catch(function(err) {console.log(err)}));
+		bot.login(token).then(success).catch(function(err) {console.log(err)});
 		
 		
 		

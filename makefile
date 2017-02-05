@@ -12,7 +12,7 @@ cp = cp
 
 unzip = unzip
 
-nameOfSourceBranche = master
+nameOfSourceBranche = develop
 nameOfRepo = ChickenBot-V2
 linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
 
@@ -31,9 +31,10 @@ SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFo
 
 OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 
-.PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean
+.PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean updatePart1 updatePart2
 #--------------------------
 
+make = make
 
 #-----------------------------------------------------
 
@@ -41,11 +42,23 @@ OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 all: update
 
 
+
+
 updateLib:
 	$(npm) $(npmInstallFlag) $(nodeJsLib) $(npmEndFlag)
 	
-update: $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
+updatePart1: $(nameOfSourceCodeArchive) unzipArchive
+
+updatePart2: $(OBJ_FILES_CODE) clean
+
+#update: $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
 #temp solution
+
+update: 
+	$(make) updatePart1
+	$(cp) $(nameOfArchiveSubFolder)/makefile makefile
+	$(make) updatePart2
+	 
 
 $(nameOfSourceCodeArchive):
 	$(wget) $(linkToRepoArchive)

@@ -732,17 +732,17 @@ function err(error){
 
 
 exports.init = function(token,allBotArrayPara){
-	console.log("test")
+	//console.log("test")
 	
     allBotArrayModules = allBotArrayPara;
     
 	
 	
     fs.readFile(musicListFilePath,'utf8', function (err, data) { // lit la liste des votes
-		console.log("test")
+		
 		
 		musicList = new MusicListContainer(JSON.parse(data.toString('utf8'))); // parse
-		bot.login(token).then(success).catch(err);
+		bot.login(token).then(success).catch(function(err) {console.log(err)}));
 		
 		
 		

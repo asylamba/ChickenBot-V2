@@ -108,11 +108,36 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 
 function MusicListContainer(musiArrayP){
 	
-	this.musiArray = musiArrayP;
+	this.musiArray = [];
+	
+	for(var i in musiArrayP){
+		var musicWorking = musiArrayP[i];
+		var musicTemp = new MusicObject(musicWorking.url,true);
+		
+		for (var j in musicWorking) {
+			musicTemp[j] = musicWorking[j];
+		}
+		
+		this.musiArray.push(musicTemp);
+		
+	}
+	
 	
 	this.addMusicToList = function(url){
-		this.musiArray.push(new MusicObject(url));
-		this.saveMusic();
+		
+		var boolIsInside = false;
+		for(var i in this.musiArray){
+			if (this.musiArray[i].url == url) {
+				boolIsInside = true;
+				break; // to save time
+			}
+		}
+		
+		if (!boolIsInside) {
+			this.musiArray.push(new MusicObject(url));
+			this.saveMusic();
+		}
+		
 	}
 	
 	this.likeMusic = function(user,url,level){
@@ -167,7 +192,7 @@ function MusicListContainer(musiArrayP){
 }
 
 
-function MusicObject(url){
+function MusicObject(url,bypassTest){
 	this.url = url;
 	this.isValid = true;
 	this.info = null;
@@ -178,17 +203,20 @@ function MusicObject(url){
 	
 	this.likeArray = [];
 	
-	
-	ytdl2.getInfo(url,[],function(err,info){
-		if (info != undefined && info.title != undefined) {
-			
-			//temp.info = info;
-		}
-		else{
-			temp.isValid = false;
-		}
-	});
-	
+	if (bypassTest != null && bypassTest!= undefined && bypassTest) {
+		
+	}
+	else{
+		ytdl2.getInfo(url,[],function(err,info){
+			if (info != undefined && info.title != undefined) {
+				
+				//temp.info = info;
+			}
+			else{
+				temp.isValid = false;
+			}
+		});
+	}
 	
 	this.like = function (user,likeLevelP){
 		/*
@@ -197,7 +225,7 @@ function MusicObject(url){
 		 */
 		var pos = -1;
 		var hasLike = false;
-		for (var i in likeArray){
+		for (var i in this.likeArray){
 			if (this.likeArray[i].userId == user.id) {
 				pos = i;
 				hasLike = this.likeArray[i].changeLike(user,likeLevelP);
@@ -253,7 +281,7 @@ function likeObject(user,likeLevelP) {
 	
 	
 	
-	this.userId = userList.id;
+	this.userId = user.id;
 	this.likeLevel = likeLevelP;
 	
 	this.changeLike = function (user,likeLevelP){
@@ -289,6 +317,26 @@ function playMusicObect(startP,inputTextP,channelArrayToMessageP,infoP){
     
     
     
+}
+
+
+function getPosOfVoiceConnection(guild){
+	/*
+	 * get the pos of the voice connection associated with the guild
+	 * return -1 if it is not in voice connection
+	 *
+	 */
+	var posOfVoiceConnection = -1;
+	var voiceConnectionsArray = bot.voiceConnections.array();
+	for (var i in voiceConnectionsArray){
+		if (voiceConnectionsArray[i].channel.guild.id ==guild.id ) {
+			
+			posOfVoiceConnection = i;
+		}
+	}
+	
+	return posOfVoiceConnection;
+	
 }
 
 var playMusicAndShowIt = function(url,channelArrayToMessage,guild,rangeP){
@@ -607,7 +655,13 @@ var playNextMusic = function (channelArrayToMessage,guild){
 						
 						if (voiceConnectionTemp != null && voiceConnectionTemp!= undefined) {
 							var userArray = voiceConnectionTemp.channel.members.array();
-							playListArray[i].isPlaying = playMusicAndShowIt(musicList.getRandomMusicBasedOnLikeLevel(userArray),channelArrayToMessage,guild);
+							var urlTemp2 = musicList.getRandomMusicBasedOnLikeLevel(userArray);
+							console.log(urlTemp2);
+							if (urlTemp2 != null) {
+								playListArray[i].isPlaying = playMusicAndShowIt(urlTemp2,channelArrayToMessage,guild);
+								
+							}
+							
 						}
 						
 						
@@ -617,6 +671,11 @@ var playNextMusic = function (channelArrayToMessage,guild){
 				if ( playListArray[i].isPlaying == false){
 					for(var i in channelArrayToMessage){
 						botSendMessage("there is no more music to play.",channelArrayToMessage[i])
+					}
+				}
+				else{
+					for(var i in channelArrayToMessage){
+						botSendMessage("there is no more music to play. I chose one that you may like",channelArrayToMessage[i])
 					}
 				}
 				
@@ -926,32 +985,40 @@ var commandMusic = [
 			}
 		},
 		function(message){
-			var temP = message.content.split(" ")
-			var regBot = new RegExp("<@!"+bot.user.id+">");
-			//var urlToPlay;
-			
-			console.log(temP);
-			console.log(temP.length);
-			var hasAddedMusic = false;
-			
-			if ( temP.lenght > 2 && regBot.test(temP[1] )) {
-				console.log(temP);
-				hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild);
-				musicList.addMusicToList(temP[2]);
-			}
-			else if(temP.lenght >1 || true) {
-				console.log(temP);
-				hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild);
-				musicList.addMusicToList(temP[1]);
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			if (voiceConnectionPos != -1) {
 				
-			}
-			if (hasAddedMusic) {
-				//botSendMessage("Added music to playList",message.channel)
-				message.delete(5000);
+				
+				var temP = message.content.split(" ")
+				var regBot = new RegExp("<@!"+bot.user.id+">");
+				//var urlToPlay;
+				
+				console.log(temP);
+				console.log(temP.length);
+				var hasAddedMusic = false;
+				
+				if ( temP.lenght > 2 && regBot.test(temP[1] )) {
+					console.log(temP);
+					hasAddedMusic = addVideoToPlayList(temP[2],[message.channel],message.guild);
+					musicList.addMusicToList(temP[2]);
+				}
+				else if(temP.lenght >1 || true) {
+					console.log(temP);
+					hasAddedMusic = addVideoToPlayList(temP[1],[message.channel],message.guild);
+					musicList.addMusicToList(temP[1]);
+					
+				}
+				if (hasAddedMusic) {
+					//botSendMessage("Added music to playList",message.channel)
+					message.delete(5000);
+				}
+				else{
+					//message.react("🚫");
+					botSendMessage("error while adding the music to the play list.",message.channel)
+				}
 			}
 			else{
-				//message.react("🚫");
-				botSendMessage("error while adding the music to the play list.",message.channel)
+				botSendMessage("I am not in any voice channel",message.channel);
 			}
 			
 		   
@@ -1084,10 +1151,11 @@ var commandMusic = [
 			}
 		},
 		function(message){
-			
-			botSendMessage("Skiping music.",message.channel);
-			playNextMusic([message.channel],message.guild);
-		   
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			if (voiceConnectionPos != -1) {
+				botSendMessage("Skiping music.",message.channel);
+				playNextMusic([message.channel],message.guild);
+			}
 			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 			//TODO modifier
 		},
@@ -1149,6 +1217,178 @@ var commandMusic = [
 		},
 		commandPrefix+"playlist", "Show the current playlist",truefunc
     ),
+	
+	
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[lL]ike[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			const posPlaylistObj = findPositionOfThePlaylistObject(message.guild);
+			
+			if (voiceConnectionPos != -1 && posPlaylistObj!=-1 ) {
+				const playlistGuild =  playListArray[posPlaylistObj];
+				
+				if (playlistGuild.isPlaying) {
+					
+					
+					var urlTemp  = playlistGuild.urlToPlayArray[playlistGuild.positionPlayingNext-1];
+					
+					
+					
+					musicList.likeMusic(message.author,urlTemp,1);
+				}
+				else{
+					botSendMessage("I am not playing music.",message.channel);
+				}
+			}
+			else{
+				botSendMessage("I am not playing music.",message.channel);
+			}
+			
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"like", "note the current video as like",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[Uu]n[lL]ike[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			const posPlaylistObj = findPositionOfThePlaylistObject(message.guild);
+			
+			if (voiceConnectionPos != -1 && posPlaylistObj!=-1 ) {
+				const playlistGuild =  playListArray[posPlaylistObj];
+				
+				if (playlistGuild.isPlaying) {
+					
+					
+					var urlTemp  = playlistGuild.urlToPlayArray[playlistGuild.positionPlayingNext-1];
+					
+					
+					
+					musicList.likeMusic(message.author,urlTemp,-1);
+				}
+				else{
+					botSendMessage("I am not playing music.",message.channel);
+				}
+			}
+			else{
+				botSendMessage("I am not playing music.",message.channel);
+			}
+			
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"unlike", "note the current video as unlike",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[Dd]is[lL]ike[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			const posPlaylistObj = findPositionOfThePlaylistObject(message.guild);
+			
+			if (voiceConnectionPos != -1 && posPlaylistObj!=-1 ) {
+				const playlistGuild =  playListArray[posPlaylistObj];
+				
+				if (playlistGuild.isPlaying) {
+					
+					
+					var urlTemp  = playlistGuild.urlToPlayArray[playlistGuild.positionPlayingNext-1];
+					
+					
+					
+					musicList.likeMusic(message.author,urlTemp,-1);
+				}
+				else{
+					botSendMessage("I am not playing music.",message.channel);
+				}
+			}
+			else{
+				botSendMessage("I am not playing music.",message.channel);
+			}
+			
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"dislike", "same as "+commandPrefix+"unlike",truefunc
+    ),
+	new commandC(
+		function(message){
+			
+			var reg = new RegExp('^'+commandPrefix+'[Nn]eutral[ ]*$');
+			if(notBotFunction(message.author.id)&&reg.test(message.content) ){
+				return true
+			}
+			else{
+				return false
+			}
+		},
+		function(message){
+			var voiceConnectionPos =getPosOfVoiceConnection(message.guild)
+			const posPlaylistObj = findPositionOfThePlaylistObject(message.guild);
+			
+			if (voiceConnectionPos != -1 && posPlaylistObj!=-1 ) {
+				const playlistGuild =  playListArray[posPlaylistObj];
+				
+				if (playlistGuild.isPlaying) {
+					
+					
+					var urlTemp  = playlistGuild.urlToPlayArray[playlistGuild.positionPlayingNext-1];
+					
+					
+					
+					musicList.likeMusic(message.author,urlTemp,0);
+				}
+				else{
+					botSendMessage("I am not playing music.",message.channel);
+				}
+			}
+			else{
+				botSendMessage("I am not playing music.",message.channel);
+			}
+			
+			
+		   
+			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
+			//TODO modifier
+		},
+		commandPrefix+"eutral", "note the current video as neutral",truefunc
+    ),
+	
+	
 ]
 
 exports.commandMusic = commandMusic;

@@ -12,11 +12,17 @@ cp = cp
 
 unzip = unzip
 
-nameOfSourceBranche = develop
+
+
+nameOfSourceBranche = test
+
+
 nameOfRepo = ChickenBot-V2
 linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
 
 nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
+#nameOfSourceCodeArchive = test1.zip
+
 
 nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
 

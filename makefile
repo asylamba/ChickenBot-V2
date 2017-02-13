@@ -14,7 +14,7 @@ unzip = unzip
 
 
 
-nameOfSourceBranche = test
+nameOfSourceBranche = develop
 
 
 nameOfRepo = ChickenBot-V2

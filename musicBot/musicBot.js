@@ -61,7 +61,7 @@ var playRandomMusicWhenNoMusicIsInThePlayList = true;
 
 // TODO lock objet ?
 
-function PlayListObject(url,guildIdP,channelArrayToResponce){
+function PlayListObject(url,guildIdP,channelArrayToResponce,author){
 	
 	this.urlToPlayArray=[];
 	this.isValidUrlArray=[]; // say if the url at the same pos is a valide video
@@ -103,7 +103,7 @@ function PlayListObject(url,guildIdP,channelArrayToResponce){
 		});
 	};
 	
-	this.addElementAndDisplayMessage(url,channelArrayToResponce);
+	this.addElementAndDisplayMessage(url,channelArrayToResponce,author);
 	
 }
 

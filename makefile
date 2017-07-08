@@ -58,6 +58,9 @@ makeDir:
 
 
 test: override nameOfSourceBranche = test
+test: override nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
+test: override nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
+test: override linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
 test: update
 	
 updateLib:

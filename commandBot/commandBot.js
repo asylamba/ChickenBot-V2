@@ -266,6 +266,7 @@ var command = [
 	    messageTemp += "Pour plus d'information, consultez sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
 	    
 		var channel;
+		message.author.createDM();
 		channel =  message.author.dmChannel;
 		
 		/*var channel;

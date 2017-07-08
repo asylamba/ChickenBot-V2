@@ -752,6 +752,8 @@ exports.init = function(token,allBotArrayPara){
 
 bot.on('ready', function() { // quand le bot est pret
     
+	
+	
 	bot.user.setGame("!help");
 	
     var serverList = bot.guilds.array();//
@@ -779,7 +781,7 @@ bot.on('ready', function() { // quand le bot est pret
     }
     
     var connection = bot.voiceConnection;
-    
+    console.log("MusicBot ready ");
     
 });
 

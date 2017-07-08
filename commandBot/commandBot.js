@@ -266,7 +266,7 @@ var command = [
 	    messageTemp += "Pour plus d'information, consultez sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
 	    
 		var channel;
-		channel = message.author.dmChannel;
+		channel = message.channel;
 		
 		/*var channel;
 		
@@ -293,7 +293,7 @@ var command = [
     ),
     new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
+	    if(testMessageIfFollowedByMentionToBotOrAlloneAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
 			//																																				Lodis
 			// TODO revoir le test pour ajouté des personnes authorisé
 			return true

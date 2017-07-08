@@ -104,8 +104,8 @@ $(nameOfSourceCodeArchiveT):
 $(nameOfSourceCodeArchiveD):
 	$(wget) $(linkToRepoArchiveD)
 
-$(nameOfSourceCodeArchive):
-	$(wget) $(linkToRepoArchive)
+#$(nameOfSourceCodeArchive):
+#	$(wget) $(linkToRepoArchive)
 	
 #-----------------------------------------------------
 

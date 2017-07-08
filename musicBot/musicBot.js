@@ -1067,68 +1067,72 @@ var commandMusic = [
 		},
 		function(message){
 			
-			
-			var author = message.author;
-			var guild = message.guild;
-			var chanArray = guild.channels.array();
-			var hasFindUser = false;
-			var hasFindMeConnected;
-			
-			if (guild.voiceConnection == null || guild.voiceConnection == undefined) {
-				hasFindMeConnected = false;
-			}
-			else{
-				hasFindMeConnected = true;
-			}
-			
-			var voiceChanToConnect;
-			
-			if (!hasFindMeConnected || isModoFunc(author.id)) {
-				//the modo can force bot to move ?
+			try{
+				var author = message.author;
+				var guild = message.guild;
+				var chanArray = guild.channels.array();
+				var hasFindUser = false;
+				var hasFindMeConnected;
 				
-				for (var i in chanArray) {
-					if (chanArray[i] instanceof DiscordClient.VoiceChannel) {
-						var members = chanArray[i].members.array();
-						
-						for(var j in members){
-							if (members[j].id == author.id) {
-								hasFindUser = true;
-								voiceChanToConnect = chanArray[i];
-								//break; // we can break here for saving time
-								// the code does not fondamently chnage if you remove this break it is juste for saving time
-							}
-						}
-						
-					}
-					if (hasFindUser) {
-						//break;// we can break here for saving time
-						// the code does not fondamently chnage if you remove this break it is juste for saving time
-					}
-				}
-				
-				if (hasFindUser) {
-					voiceChanToConnect.join().then(connection =>{
-						if (hasFindMeConnected && isAdminFunc(author.id)) {
-							botSendMessage("Beloved administrator, I sucessfuly move to your channel.",message.channel);
-						}
-						else if (hasFindMeConnected && isModoFunc(author.id)) {
-							botSendMessage("Beloved moderator, I sucessfuly move to your channel.",message.channel);
-						}
-						else{
-							botSendMessage("I sucessfuly join your channel.",message.channel);
-						}
-					}).catch(error=> {
-						botSendMessage("I cannot join your channel : "+ error+".",message.channel);
-					});
+				if (guild.voiceConnection == null || guild.voiceConnection == undefined) {
+					hasFindMeConnected = false;
 				}
 				else{
-					botSendMessage("Your are not connected to a voice channel, please connect frist and redo this commande.",message.channel);
+					hasFindMeConnected = true;
 				}
-			}
-			else{
-				botSendMessage("I am already playng in a other channel, please use !leaveVoice before adding me to a new channel.",message.channel);
-			}
+				
+				var voiceChanToConnect;
+				
+				if (!hasFindMeConnected || isModoFunc(author.id)) {
+					//the modo can force bot to move ?
+					
+					for (var i in chanArray) {
+						if (chanArray[i] instanceof DiscordClient.VoiceChannel) {
+							var members = chanArray[i].members.array();
+							
+							for(var j in members){
+								if (members[j].id == author.id) {
+									hasFindUser = true;
+									voiceChanToConnect = chanArray[i];
+									//break; // we can break here for saving time
+									// the code does not fondamently chnage if you remove this break it is juste for saving time
+								}
+							}
+							
+						}
+						if (hasFindUser) {
+							//break;// we can break here for saving time
+							// the code does not fondamently chnage if you remove this break it is juste for saving time
+						}
+					}
+					
+					if (hasFindUser) {
+						voiceChanToConnect.join().then(connection =>{
+							if (hasFindMeConnected && isAdminFunc(author.id)) {
+								botSendMessage("Beloved administrator, I sucessfuly move to your channel.",message.channel);
+							}
+							else if (hasFindMeConnected && isModoFunc(author.id)) {
+								botSendMessage("Beloved moderator, I sucessfuly move to your channel.",message.channel);
+							}
+							else{
+								botSendMessage("I sucessfuly join your channel.",message.channel);
+							}
+						}).catch(error=> {
+							botSendMessage("I cannot join your channel : "+ error+".",message.channel);
+						});
+					}
+					else{
+						botSendMessage("Your are not connected to a voice channel, please connect frist and redo this commande.",message.channel);
+					}
+				}
+				else{
+					botSendMessage("I am already playng in a other channel, please use !leaveVoice before adding me to a new channel.",message.channel);
+				}
 			
+			}
+			catch(err){
+				botSendMessage("I cannot join your channel : "+ error+".",message.channel);
+			}
 			
 		},
 		commandPrefix+"joinVoice", "Join the voice channel your are in (and for modo : force moving the bot)",truefunc

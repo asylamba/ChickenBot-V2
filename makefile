@@ -37,7 +37,7 @@ SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFo
 
 OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 
-.PHONY: updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean updatePart1 updatePart2 cpMakeFile makeDir
+.PHONY: test updateLib update unzipArchive all removeArchive deleteArchive deleteTempSourceFolder clean updatePart1 updatePart2 cpMakeFile makeDir
 #--------------------------
 
 make = make
@@ -57,7 +57,9 @@ makeDir:
 	mkdir test
 
 
-
+test: override nameOfSourceBranche = test
+test: update
+	
 updateLib:
 	$(npm) $(npmInstallFlag) $(nodeJsLib) $(npmEndFlag)
 	

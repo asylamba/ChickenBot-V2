@@ -152,3 +152,6 @@ botManager =botManager.js
 
 run: 
 	$(nodejs) $(botManager)
+	
+.PHONY: .FORCE
+.FORCE:

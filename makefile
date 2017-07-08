@@ -33,6 +33,8 @@ nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
 
 
 nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
+nameOfArchiveSubFolderT = $(nameOfRepo)-$(nameOfSourceBrancheT)
+nameOfArchiveSubFolderD = $(nameOfRepo)-$(nameOfSourceBrancheD)
 
 
 #----------------------------------------
@@ -53,13 +55,15 @@ make = make
 #-----------------------------------------------------
 
 
+all: update
+
 test: override nameOfSourceBranche = $(nameOfSourceBrancheT)
 test: override nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
 test: override nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
 #test: override linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
 test: update
 
-all: update
+
 
 makeDir:
 	mkdir commandBot
@@ -97,6 +101,9 @@ $(nameOfSourceCodeArchiveT):
 
 $(nameOfSourceCodeArchiveD):
 	$(wget) $(linkToRepoArchiveD)
+
+$(nameOfSourceCodeArchive):
+	$(wget) $(linkToRepoArchive)
 	
 #-----------------------------------------------------
 
@@ -110,7 +117,8 @@ $(nameOfSourceCodeArchiveD):
 #----------------------------------------------------
 	
 unzipArchive:
-	$(unzip) $(nameOfSourceBranche)
+	$(unzip) $(nameOfSourceBrancheD)
+	$(unzip) $(nameOfSourceBrancheT)
 
 #-----------------------------------------------------
 
@@ -125,7 +133,8 @@ deleteArchive:
 	$(rm) $(rmSilentFlag) $(nameOfSourceCodeArchiveT)
  
 deleteTempSourceFolder:
-	$(rm) $(rmSilentFlag) $(rmRecursiveFlag) $(nameOfArchiveSubFolder)
+	$(rm) $(rmSilentFlag) $(rmRecursiveFlag) $(nameOfArchiveSubFolderT)
+	$(rm) $(rmSilentFlag) $(rmRecursiveFlag) $(nameOfArchiveSubFolderD)
 
 clean: deleteArchive deleteTempSourceFolder
 	

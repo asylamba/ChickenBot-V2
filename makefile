@@ -91,6 +91,7 @@ updatePart2: $(OBJ_FILES_CODE) clean
 update: cpMakeFile $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchiveT) $(nameOfSourceCodeArchiveD) unzipArchive 
 update:
 	echo $(OBJ_FILES_CODE)
+	echo $(nameOfArchiveSubFolder)
 #temp solution
 
 cpMakeFile:

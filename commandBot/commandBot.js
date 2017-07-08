@@ -154,7 +154,7 @@ var notBotFunction = function(userID){
 var botSendMessage = function(message,channel,options){
     //send message (you can use .then().catch() ..)
     //options is optional
-    if (message!= undefined && message!= null) {
+    if (options!= undefined && options!= null) {
 		return channel.send(message,options);
     }
     else {

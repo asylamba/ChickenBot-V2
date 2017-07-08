@@ -211,8 +211,8 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
      * 
      */
 	
-	var regexpMessage = new RegExp("^"+messageToTest+"$");
-	var regexpMessage2 = new RegExp("^"+messageToTest+"[ ]*");
+	var regexpMessage = new RegExp(messageToTest);
+	var regexpMessage2 = new RegExp(""+messageToTest+"[ ]*");
     
     return regexpMessage.test(message) || regexpMessage2.test(message) || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
@@ -273,7 +273,7 @@ var command = [
 		var mArray = m.split(" ")
 		for (var i = 0; i<mArray.length;++i){
 			if (mArray[i] == "show") {
-				channel = message.channel
+				channel = message.channel;
 			}
 		}
 		

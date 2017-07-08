@@ -97,6 +97,7 @@ update:
 cpMakeFile:
 	$(cp) $(nameOfArchiveSubFolder)/makefile makefile
 
+cpMakeFile: .FORCE
 #update: 
 #	$(make) updatePart1
 #	$(cp) $(nameOfArchiveSubFolder)/makefile makefile
@@ -133,6 +134,7 @@ unzipArchive:
 %.js: 
 	$(cp) $(nameOfArchiveSubFolder)/$@ $@
 
+%.js: .FORCE
 #-----------------------------------------------------
 
 deleteArchive:

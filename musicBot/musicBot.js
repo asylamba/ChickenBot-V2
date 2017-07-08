@@ -1421,7 +1421,7 @@ var commandMusic = [
 			//botSendMessage("\'\"une commande pour les gouverner tous\" ! \' \n - *Oxymore 13.01.2017 à 00h20*",message.channel);
 			//TODO modifier
 		},
-		commandPrefix+"eutral", "note the current video as neutral",truefunc
+		commandPrefix+"Neutral", "note the current video as neutral",truefunc
     ),
 	
 	

@@ -15,7 +15,7 @@ unzip = unzip
 
 
 nameOfSourceBrancheD = develop
-nameOfSourceBrancheT = test
+nameOfSourceBrancheT = testBranch
 
 nameOfSourceBranche = $(nameOfSourceBrancheD)
 

@@ -62,6 +62,8 @@ all: update
 test: override nameOfSourceBranche = $(nameOfSourceBrancheT)
 test: override nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
 test: override nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
+test: override SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFolder)/*/*.js  $(nameOfArchiveSubFolder)/*/*/*.js)
+test: override OBJ_FILES_CODE = $(subst $(nameOfArchiveSubFolder)/,,$(SRC_FILES_CODE))
 #test: override linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
 test: update
 

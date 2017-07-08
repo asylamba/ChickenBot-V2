@@ -210,8 +210,11 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
      * test si un message est de la forme "messageToTest @ChickenBot[ ]*" ou "messageToTest"
      * 
      */
+	
+	var regexpMessage = new RegExp("^"+messageToTest+"$");
+	var regexpMessage2 = new RegExp("^"+messageToTest+"[ ]*");
     
-    return messageToTest == message || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
+    return regexpMessage.test(message) || regexpMessage2.test(message) || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
     
 }
@@ -262,11 +265,23 @@ var command = [
 		messageTemp +="```";
 	    messageTemp += "Pour plus d'information, consultez sur le wiki du bot https://github.com/asylamba/ChickenBot-V2/wiki/Liste-des-commandes"
 	    
+		var channel;
+		
+		channel = message.author.dmChannel;
+		
+		var m = message.content
+		var mArray = m.split(" ")
+		for (var i = 0; i<mArray.length;++i){
+			if (mArray[i] == "show") {
+				channel = message.channel
+			}
+		}
+		
 	    if (messageTemp != "") {
-			botSendMessage(messageTemp+"",message.channel);
+			botSendMessage(messageTemp+"",channel);
 	    }
 	    else{
-			botSendMessage("no help to show",message.channel);
+			botSendMessage("no help to show",channel);
 	    }
 	    
 	    

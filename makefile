@@ -137,4 +137,6 @@ deleteTempSourceFolder:
 	$(rm) $(rmSilentFlag) $(rmRecursiveFlag) $(nameOfArchiveSubFolderD)
 
 clean: deleteArchive deleteTempSourceFolder
-	
+
+
+run: nodejs botManager.js

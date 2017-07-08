@@ -214,7 +214,7 @@ var testMessageIfFollowedByMentionToBotOrAllone = function(message,messageToTest
 	var regexpMessage = new RegExp(messageToTest);
 	var regexpMessage2 = new RegExp(""+messageToTest+"[ ]*");
     
-    return regexpMessage.test(message) || regexpMessage2.test(message) || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
+    return message==messageToTest || testMessageIfFollowedByMentionToBot(message,messageToTest) ;
     
     
 }

@@ -14,11 +14,19 @@ unzip = unzip
 
 
 
-nameOfSourceBranche = develop
+nameOfSourceBrancheD = develop
+nameOfSourceBrancheT = test
 
+nameOfSourceBranche = $(nameOfSourceBrancheD)
 
 nameOfRepo = ChickenBot-V2
+linkToRepoArchiveD = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBrancheD).zip"
+linkToRepoArchiveT = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBrancheT).zip"
+
+
 linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
+
+
 
 nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
 #nameOfSourceCodeArchive = test1.zip
@@ -45,6 +53,12 @@ make = make
 #-----------------------------------------------------
 
 
+test: override nameOfSourceBranche = $(nameOfSourceBrancheT)
+test: override nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
+test: override nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
+#test: override linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
+test: update
+
 all: update
 
 makeDir:
@@ -57,20 +71,16 @@ makeDir:
 	mkdir test
 
 
-test: override nameOfSourceBranche = test
-test: override nameOfArchiveSubFolder = $(nameOfRepo)-$(nameOfSourceBranche)
-test: override nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
-test: override linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfSourceBranche).zip"
-test: update
+
 	
 updateLib:
 	$(npm) $(npmInstallFlag) $(nodeJsLib) $(npmEndFlag)
 	
-updatePart1: $(nameOfSourceCodeArchive) unzipArchive
+updatePart1: $(nameOfSourceCodeArchiveT) $(nameOfSourceCodeArchiveD) unzipArchive
 
 updatePart2: $(OBJ_FILES_CODE) clean
 
-update: cpMakeFile $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchive) unzipArchive 
+update: cpMakeFile $(OBJ_FILES_CODE) clean $(nameOfSourceCodeArchiveT) $(nameOfSourceCodeArchiveD) unzipArchive 
 #temp solution
 
 cpMakeFile:
@@ -82,9 +92,12 @@ cpMakeFile:
 #	$(make) updatePart2
 	 
 
-$(nameOfSourceCodeArchive):
-	$(wget) $(linkToRepoArchive)
+$(nameOfSourceCodeArchiveT):
+	$(wget) $(linkToRepoArchiveT)
 
+$(nameOfSourceCodeArchiveD):
+	$(wget) $(linkToRepoArchiveD)
+	
 #-----------------------------------------------------
 
 #setVar: override SRC_FILES_CODE =  $(wildcard $(nameOfArchiveSubFolder)/*.js $(nameOfArchiveSubFolder)/*/*.js  $(nameOfArchiveSubFolder)/*/*/*.js)
@@ -108,7 +121,8 @@ unzipArchive:
 #-----------------------------------------------------
 
 deleteArchive:
-	$(rm) $(rmSilentFlag) $(nameOfSourceCodeArchive)
+	$(rm) $(rmSilentFlag) $(nameOfSourceCodeArchiveD)
+	$(rm) $(rmSilentFlag) $(nameOfSourceCodeArchiveT)
  
 deleteTempSourceFolder:
 	$(rm) $(rmSilentFlag) $(rmRecursiveFlag) $(nameOfArchiveSubFolder)

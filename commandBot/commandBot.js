@@ -267,8 +267,11 @@ var command = [
 	    
 		var channel;
 		message.author.createDM();
-		channel =  message.author.dmChannel;
 		
+		channel =  message.author.dmChannel;
+		if (channel == null) {
+			channel = message.channel;
+		}
 		/*var channel;
 		
 		channel = message.author.dmChannel;

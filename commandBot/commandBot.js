@@ -293,7 +293,7 @@ var command = [
     ),
     new commandC(
 	function(message){
-	    if(testMessageIfFollowedByMentionToBotOrAlloneAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
+	    if(testMessageIfFollowedByMentionToBotOrAllone(message.content,commandPrefix+"exit") && (isAdminFunc(message.author.id) || (message.author.id == "136079026266701824" && developBuild))){
 			//																																				Lodis
 			// TODO revoir le test pour ajouté des personnes authorisé
 			return true

@@ -29,6 +29,8 @@ linkToRepoArchive = "https://github.com/asylamba/$(nameOfRepo)/archive/$(nameOfS
 
 
 nameOfSourceCodeArchive = $(nameOfSourceBranche).zip
+nameOfSourceCodeArchiveT = $(nameOfSourceBrancheT).zip
+nameOfSourceCodeArchiveD = $(nameOfSourceBrancheD).zip
 #nameOfSourceCodeArchive = test1.zip
 
 

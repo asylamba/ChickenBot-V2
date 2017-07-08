@@ -140,5 +140,8 @@ deleteTempSourceFolder:
 
 clean: deleteArchive deleteTempSourceFolder
 
+nodejs = nodejs
+botManager =botManager.js
 
-run: nodejs botManager.js
+run: 
+	$(nodejs) $(botManager)

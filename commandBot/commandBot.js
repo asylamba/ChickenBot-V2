@@ -268,11 +268,8 @@ var command = [
 		var channel;
 		message.author.createDM();
 		
-		channel =  message.author.dmChannel;
-		if (channel == null) {
-			channel = message.channel;
-		}
-		/*var channel;
+		//channel =  message.author.dmChannel;
+		
 		
 		channel = message.author.dmChannel;
 		
@@ -283,14 +280,26 @@ var command = [
 				channel = message.channel;
 			}
 		}
-		*/
-	    if (messageTemp != "") {
-			botSendMessage(messageTemp+"",channel);
-	    }
-	    else{
-			botSendMessage("no help to show",channel);
-	    }
-	    
+		
+		if (channel == null) {
+			//channel = message.channel;
+			var p = message.author.createDM();
+			p.then(function(channel){
+				if (messageTemp != "") {
+					botSendMessage(messageTemp+"",channel);
+				}
+				else{
+					botSendMessage("no help to show",channel);
+				}
+			})
+		}else{
+			if (messageTemp != "") {
+				botSendMessage(messageTemp+"",channel);
+			}
+			else{
+				botSendMessage("no help to show",channel);
+			}
+		}
 	    
 	},
 	commandPrefix+"help", "affiche la liste des commandes",truefunc
